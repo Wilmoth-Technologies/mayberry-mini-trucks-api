@@ -16,8 +16,8 @@ import java.security.interfaces.RSAPublicKey
 import java.security.spec.RSAPublicKeySpec
 import java.util.Base64
 import javax.inject.Inject
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.io.Source
-import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class AuthFilter @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
 
