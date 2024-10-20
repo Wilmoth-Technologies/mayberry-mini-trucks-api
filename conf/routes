@@ -4,3 +4,5 @@
 
 GET           /health                                       controllers.HealthController.health
 GET           /reviews/count/:placeId                       controllers.ReviewController.getReviewCount(placeId: String)
+
+POST          /management/submitInventory                   controllers.ManagementController.submitInventory
