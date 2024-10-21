@@ -5,4 +5,6 @@
 GET           /health                                       controllers.HealthController.health
 GET           /reviews/count/:placeId                       controllers.ReviewController.getReviewCount(placeId: String)
 
-POST          /management/submitInventory                   controllers.ManagementController.submitInventory
+POST          /management/addInventory                      controllers.ManagementController.submitNewInventory
+PUT           /management/updateInventory                   controllers.ManagementController.submitInventoryEdit(areImagesUpdated: Boolean)
+DELETE        /management/deleteInventory                   controllers.ManagementController.deleteInventory(vin: String)
