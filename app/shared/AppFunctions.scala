@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.databind.{DeserializationFeature, JsonNode}
 import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule}
-import play.api.mvc.{AnyContent, Request}
+import play.api.mvc.{AnyContent, Request, Result}
+import play.api.mvc.Results.{NotFound, _}
 
 object AppFunctions {
   val objectMapper: JsonMapper with ClassTagExtensions = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
@@ -25,4 +26,15 @@ object AppFunctions {
 
   def multipartRequestToObject[T](body: Option[String])(implicit m: Manifest[T]): T = objectMapper
     .readValue[T](body.get)
+
+  def listToJson[T](responseList: List[T]): Result = {
+    if (responseList.nonEmpty)
+      Ok(toJson(responseList))
+    else
+      NotFound("Data Not Found")
+  }
+
+  def listToJsonAllowEmpty[T](responseList: List[T]): Result = {
+    Ok(toJson(responseList))
+  }
 }

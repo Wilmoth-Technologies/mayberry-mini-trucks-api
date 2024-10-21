@@ -13,4 +13,7 @@ object CosmosQuery {
       s"""SELECT * FROM $collectionName c WHERE c.id = $parameterizedId""",
       List(new SqlParameter(parameterizedId, id)): _*
     )
+
+  def getAllResults()(collectionName: String): SqlQuerySpec =
+    new SqlQuerySpec(s"""SELECT * FROM $collectionName c""")
 }

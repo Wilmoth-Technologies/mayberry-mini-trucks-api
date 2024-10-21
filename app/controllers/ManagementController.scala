@@ -2,14 +2,14 @@ package controllers
 
 import akka.stream.Materializer
 import com.azure.cosmos.models.PartitionKey
-import dao.CosmosQuery.getResultsById
+import dao.CosmosQuery.{getAllResults, getResultsById}
 import dao.{CosmosDb, CosmosQuery}
 import models.Inventory
 import play.api.Logger
 import play.api.libs.Files
 import play.api.mvc._
 import services.CloudStorageService
-import shared.AppFunctions.multipartRequestToObject
+import shared.AppFunctions.{listToJson, multipartRequestToObject}
 import shared.exceptions.RecordAlreadyExists
 
 import javax.inject.Inject
@@ -22,6 +22,20 @@ class ManagementController @Inject()(cc: ControllerComponents,
 
   val logger: Logger = Logger(this.getClass)
   private val inventoryCollection: String = CosmosQuery.inventoryCollection
+
+  def fetchAllInventoryItems: Action[AnyContent] =
+    Action.async {
+      for {
+        inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
+      } yield listToJson(inventoryList)
+    }
+
+  def fetchSingleInventoryItem(vin: String): Action[AnyContent] =
+    Action.async {
+      for {
+        inventoryItem <- cosmosDb.runQuery[Inventory](getResultsById(vin), inventoryCollection, Some(new PartitionKey(vin)))
+      } yield listToJson(inventoryItem)
+    }
 
   def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
     implicit request => {
