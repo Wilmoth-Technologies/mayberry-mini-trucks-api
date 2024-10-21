@@ -19,6 +19,7 @@ case class Inventory(
                     mileage: Int,
                     transmission: String,
                     engine: String,
+                    purchaseDate: String,
                     description: String,
                     price: BigDecimal,
                     options: List[InventoryOption],
@@ -28,6 +29,19 @@ case class Inventory(
                     updatedBy: String,
                     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                     creationTimeStamp: Timestamp,
+                    )
+
+case class InventoryTable(
+                      vin: String,
+                      shipmentNumber: String,
+                      stockNumber: String,
+                      purchaseDate: String,
+                      make: String,
+                      model: String,
+                      year: String,
+                      mileage: Int,
+                      price: BigDecimal,
+                      actions: String = "action",
                     )
 
 case class InventoryOption(@JsonScalaEnumeration(classOf[InventoryOptionsType]) option: InventoryOptions)

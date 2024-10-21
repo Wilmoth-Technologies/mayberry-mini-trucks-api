@@ -4,7 +4,7 @@ import akka.stream.Materializer
 import com.azure.cosmos.models.PartitionKey
 import dao.CosmosQuery.{getAllResults, getResultsById}
 import dao.{CosmosDb, CosmosQuery}
-import models.Inventory
+import models.{Inventory, InventoryTable}
 import play.api.Logger
 import play.api.libs.Files
 import play.api.mvc._
@@ -27,7 +27,9 @@ class ManagementController @Inject()(cc: ControllerComponents,
     Action.async {
       for {
         inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
-      } yield listToJson(inventoryList)
+        mappedList = inventoryList.map(item => InventoryTable(item.vin, item.shipmentNumber, item.stockNumber,
+          item.purchaseDate, item.make, item.model, item.year, item.mileage, item.price))
+      } yield listToJson(mappedList)
     }
 
   def fetchSingleInventoryItem(vin: String): Action[AnyContent] =
