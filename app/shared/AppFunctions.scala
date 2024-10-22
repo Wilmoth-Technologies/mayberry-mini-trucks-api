@@ -4,14 +4,20 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.databind.{DeserializationFeature, JsonNode}
 import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule}
+import org.joda.time.DateTime
+import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 import play.api.mvc.{AnyContent, Request, Result}
 import play.api.mvc.Results.{NotFound, _}
+
+import java.sql.Timestamp
 
 object AppFunctions {
   val objectMapper: JsonMapper with ClassTagExtensions = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
   objectMapper.registerModule(DefaultScalaModule)
   objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
   objectMapper.setSerializationInclusion(Include.NON_EMPTY)
+
+  private val DateTimestampFormat: DateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss")
 
   case class ValidationResult(isValid: Boolean, resultText: String)
 
@@ -37,4 +43,6 @@ object AppFunctions {
   def listToJsonAllowEmpty[T](responseList: List[T]): Result = {
     Ok(toJson(responseList))
   }
+
+  def currentDateTimeInTimeStamp: Timestamp = Timestamp.valueOf(DateTimestampFormat.print(DateTime.now))
 }

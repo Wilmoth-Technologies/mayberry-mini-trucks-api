@@ -9,7 +9,7 @@ import play.api.Logger
 import play.api.libs.Files
 import play.api.mvc._
 import services.CloudStorageService
-import shared.AppFunctions.{listToJson, multipartRequestToObject}
+import shared.AppFunctions.{currentDateTimeInTimeStamp, listToJson, multipartRequestToObject}
 import shared.exceptions.RecordAlreadyExists
 
 import javax.inject.Inject
@@ -22,6 +22,14 @@ class ManagementController @Inject()(cc: ControllerComponents,
 
   val logger: Logger = Logger(this.getClass)
   private val inventoryCollection: String = CosmosQuery.inventoryCollection
+
+  def fetchAllVin: Action[AnyContent] =
+    Action.async {
+      for {
+        inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
+        mappedList = inventoryList.map(item => item.vin)
+      } yield listToJson(mappedList)
+    }
 
   def fetchAllInventoryItems: Action[AnyContent] =
     Action.async {
@@ -38,7 +46,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
         inventoryItem <- cosmosDb.runQuery[Inventory](getResultsById(vin), inventoryCollection, Some(new PartitionKey(vin)))
       } yield listToJson(inventoryItem)
     }
-
+//TODO: Add in updatedBy field based on User Auth
   def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
     implicit request => {
       logger.info(s"POST: Submit New Inventory: $request")
@@ -50,11 +58,13 @@ class ManagementController @Inject()(cc: ControllerComponents,
           throw RecordAlreadyExists(s"VIN: ${inventoryDetails.vin} already exists in Inventory")
         }
         imageLinkList <- parseImages(request.body, inventoryDetails)
-        _ <- cosmosDb.add(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageLinkList), inventoryCollection, new PartitionKey(inventoryDetails.vin))
+        _ <- cosmosDb.add(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageLinkList,
+          updatedTimeStamp = currentDateTimeInTimeStamp, creationTimeStamp = currentDateTimeInTimeStamp),
+          inventoryCollection, new PartitionKey(inventoryDetails.vin))
       } yield Created(inventoryDetails.vin)
     }
   }
-
+  //TODO: Add in updatedBy field based on User Auth
   def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
     implicit request => {
       logger.info(s"PUT: Submit Inventory: $request")
@@ -63,11 +73,13 @@ class ManagementController @Inject()(cc: ControllerComponents,
       if (areImagesUpdated) {
         for {
           imageLinkList <- clearAndParseImages(request.body, inventoryDetails)
-          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageLinkList), inventoryCollection, inventoryDetails.vin, inventoryDetails.vin)
+          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageLinkList,
+            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.vin)
         } yield NoContent
       } else {
         for {
-          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin), inventoryCollection, inventoryDetails.vin, inventoryDetails.vin)
+          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin,
+            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.vin)
         } yield NoContent
       }
     }

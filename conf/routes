@@ -5,6 +5,7 @@
 GET           /health                                       controllers.HealthController.health
 GET           /reviews/count/:placeId                       controllers.ReviewController.getReviewCount(placeId: String)
 
+GET           /management/getAllVin                         controllers.ManagementController.fetchAllVin
 GET           /management/getAllInventory                   controllers.ManagementController.fetchAllInventoryItems
 GET           /management/getInventoryItem                  controllers.ManagementController.fetchSingleInventoryItem(vin: String)
 POST          /management/addInventory                      controllers.ManagementController.submitNewInventory
