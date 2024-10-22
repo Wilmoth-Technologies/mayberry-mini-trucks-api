@@ -1,0 +1,105 @@
+name: 'Build and Deploy to Cloud Run'
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGION: 'us-east4'
+  CLOUD_RUN_SERVICE_DEV: 'mayberry-mini-trucks-api-dev'
+  CLOUD_RUN_SERVICE_PROD: 'mayberry-mini-trucks-api-prod'
+  REPOSITORY_SERVICE: 'mayberry-mini-trucks-dev'
+  IMAGE: 'mayberry-mini-trucks-api'
+
+jobs:
+
+  build:
+    name: Build Image and Push Container to Registry
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
+
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: "Set up GCP SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
+
+      - name: "Use GCP CLI"
+        run: "gcloud info"
+
+      - name: "Docker Auth for GCP"
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: 'Build and Push Container to GCP Artifact Registry'
+        run: |
+          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ env.REPOSITORY_SERVICE }}/${{ env.IMAGE }}:${{ github.sha }}"
+          docker build --no-cache --tag "${DOCKER_TAG}" .
+          docker push "${DOCKER_TAG}"
+
+
+  deploy-dev:
+    name: Deploy Container to Cloud Run - Dev
+    needs: build
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: 'Deploy to Cloud Run'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: '${{ env.CLOUD_RUN_SERVICE_DEV }}'
+          region: '${{ env.REGION }}'
+          image: '${{ env.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ env.REPOSITORY_SERVICE }}/${{ env.IMAGE }}:${{ github.sha }}'
+          env_vars: |-
+            ENVIRONMENT=dev
+          secrets: |-
+            /secrets/gcp-service-account-json=gcp-service-account-json:latest
+            COSMOS_DB_CONNECTION_KEY=dev-cosmosdb-key:latest
+
+      - name: 'Show output'
+        run: |2-
+          echo ${{ steps.deploy.outputs.url }}
+
+  deploy-prod:
+    name: Deploy Container to Cloud Run - Prod
+    needs: deploy-dev
+    environment: prod
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: 'Deploy to Cloud Run'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: '${{ env.CLOUD_RUN_SERVICE_PROD }}'
+          region: '${{ env.REGION }}'
+          image: '${{ env.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ env.REPOSITORY_SERVICE }}/${{ env.IMAGE }}:${{ github.sha }}'
+          env_vars: |-
+            ENVIRONMENT=prod
+
+      - name: 'Show output'
+        run: |2-
+          echo ${{ steps.deploy.outputs.url }}

@@ -22,4 +22,4 @@ EXPOSE 9000
 RUN sbt stage
 
 # Run the Play app
-CMD ["sbt", "run"]
+CMD ["sbt", "run", "-Dconfig.resource=${ENVIRONMENT}.conf"]

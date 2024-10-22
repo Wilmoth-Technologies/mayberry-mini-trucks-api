@@ -20,7 +20,7 @@ class CosmosDbBuilder @Inject()(secrets: SecretManager)(implicit ec: ExecutionCo
     if (ConfigFactory.load.getBoolean("isSecretManagerSetup")) {
       new CosmosClientBuilder()
         .endpoint(config.getString("regioncosmosdb.endpoint"))
-        .key(secrets.accessSecret(config.getString("regioncosmosdb.gsmname"), config.getString("gsm.projectkey")))
+        .key(sys.env("COSMOS_DB_CONNECTION_KEY"))
         .throttlingRetryOptions(throttlingRetryOptions)
         .consistencyLevel(ConsistencyLevel.EVENTUAL)
         .contentResponseOnWriteEnabled(true)

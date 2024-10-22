@@ -2,6 +2,7 @@ package services
 
 import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.storage.{BlobId, BlobInfo, Bucket, Storage, StorageOptions}
+import com.typesafe.config.{Config, ConfigFactory}
 import play.api.Logger
 import shared.AppConstants.GCSBucketName
 import shared.AppFunctions.toJson
@@ -14,10 +15,11 @@ import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 class CloudStorageService {
   val logger: Logger = Logger(this.getClass)
+  val config: Config = ConfigFactory.load()
 
-  private def getStorage(serviceAccountPath: String): Storage = {
+  private def getStorage: Storage = {
     // Load the credentials from the service account JSON file
-    val credentials = ServiceAccountCredentials.fromStream(new FileInputStream(serviceAccountPath))
+    val credentials = ServiceAccountCredentials.fromStream(new FileInputStream(config.getString("accountJsonPath")))
 
     // Build the Storage client with the credentials
     val storage: Storage = StorageOptions.newBuilder()
@@ -29,7 +31,7 @@ class CloudStorageService {
   }
 
   def uploadImage(uniqueId: String, fileName: String, filePath: Path): String = {
-    val storage = getStorage("/Users/gabewilmoth/Desktop/Mayberry Mini Trucks/mayberry-mini-trucks-api/conf/gcp-service-account.json")
+    val storage = getStorage
     val blobId = BlobId.of(GCSBucketName, s"$uniqueId/$fileName")
     val blobInfo = BlobInfo.newBuilder(blobId).build()
 
@@ -41,7 +43,7 @@ class CloudStorageService {
 
   // Function to check if a blob exists
   def blobExists(blobName: String): Boolean = {
-    val storage = getStorage("/Users/gabewilmoth/Desktop/Mayberry Mini Trucks/mayberry-mini-trucks-api/conf/gcp-service-account.json")
+    val storage = getStorage
     // List objects in the bucket with the folder prefix
     val blobs = storage.list(GCSBucketName, Storage.BlobListOption.prefix(blobName))
     blobs.getValues.asScala.nonEmpty
@@ -49,7 +51,7 @@ class CloudStorageService {
 
   // Function to delete all objects in a blob
   def deleteBlob(blobName: String): Unit = {
-    val storage = getStorage("/Users/gabewilmoth/Desktop/Mayberry Mini Trucks/mayberry-mini-trucks-api/conf/gcp-service-account.json")
+    val storage = getStorage
     val blobs = storage.list(GCSBucketName, Storage.BlobListOption.prefix(blobName))
 
     blobs.getValues.asScala.foreach { blob =>
@@ -61,7 +63,7 @@ class CloudStorageService {
   }
 
   def getBucketContents(blobName: String): String = {
-    val storage = getStorage("/Users/gabewilmoth/Desktop/Mayberry Mini Trucks/mayberry-mini-trucks-api/conf/gcp-service-account.json")
+    val storage = getStorage
     val bucket: Bucket = storage.get(GCSBucketName)
     val blobs = bucket.list(Storage.BlobListOption.prefix(s"$blobName/")).iterateAll().asScala
 
