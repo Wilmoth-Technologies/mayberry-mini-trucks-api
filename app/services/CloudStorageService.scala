@@ -1,11 +1,13 @@
 package services
 
 import com.google.auth.oauth2.ServiceAccountCredentials
-import com.google.cloud.storage.{BlobId, BlobInfo, Storage, StorageOptions}
+import com.google.cloud.storage.{BlobId, BlobInfo, Bucket, Storage, StorageOptions}
 import play.api.Logger
 import shared.AppConstants.GCSBucketName
+import shared.AppFunctions.toJson
 
 import java.io.FileInputStream
+import java.nio.channels.Channels
 import java.nio.file.Files
 import java.nio.file.Path
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
@@ -56,5 +58,27 @@ class CloudStorageService {
     }
 
     logger.info(s"Blob '$blobName' deleted from bucket '$GCSBucketName'.")
+  }
+
+  def getBucketContents(blobName: String): String = {
+    val storage = getStorage("/Users/gabewilmoth/Desktop/Mayberry Mini Trucks/mayberry-mini-trucks-api/conf/gcp-service-account.json")
+    val bucket: Bucket = storage.get(GCSBucketName)
+    val blobs = bucket.list(Storage.BlobListOption.prefix(s"$blobName/")).iterateAll().asScala
+
+    // For each image, retrieve the binary data and construct the URL
+    val imageData = blobs.map { blob =>
+      val inputStream = Channels.newInputStream(blob.reader())
+      val binaryData = Stream.continually(inputStream.read()).takeWhile(_ != -1).map(_.toByte).toArray
+
+      // Return image metadata, binary data, and URL
+      Map(
+        "name" -> blob.getName,
+        "url" -> s"https://storage.googleapis.com/$GCSBucketName/${blob.getName}",
+        "contentType" -> blob.getContentType,
+        "binaryData" -> binaryData.map(_.toString) // Converting binary data to string for JSON
+      )
+    }
+
+    toJson(imageData)
   }
 }

@@ -23,6 +23,16 @@ class ManagementController @Inject()(cc: ControllerComponents,
   val logger: Logger = Logger(this.getClass)
   private val inventoryCollection: String = CosmosQuery.inventoryCollection
 
+  def fetchAllPhotos(vin: String): Action[AnyContent] =
+    Action.async {
+      try {
+        Future(Ok(gcsService.getBucketContents(vin)))
+      } catch {
+        case e: Exception =>
+          Future(InternalServerError(s"Error listing image binaries: ${e.getMessage}"))
+      }
+    }
+
   def fetchAllVin: Action[AnyContent] =
     Action.async {
       for {
