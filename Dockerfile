@@ -16,10 +16,10 @@ RUN apt-get update && \
     apt-get install sbt -y
 
 # Expose the port the app runs on
-EXPOSE 9000
+EXPOSE 8080
 
 # Build the project
 RUN sbt stage
 
 # Run the Play app
-CMD ["sbt", "run", "-Dconfig.resource=${ENVIRONMENT}.conf"]
+CMD ["sbt", "run", "-Dconfig.resource=${ENVIRONMENT}.conf", "-Dhttp.port=8080"]
