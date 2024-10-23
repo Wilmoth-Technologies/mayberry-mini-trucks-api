@@ -30,7 +30,11 @@ class CosmosDb @Inject()(builder: CosmosDbBuilder)(implicit ec: ExecutionContext
   val config: Config = ConfigFactory.load()
   val cosmosDbClient: CosmosClient = builder.build()
 
-  lazy val database: String = config.getString("regioncosmosdb.databasename")
+  lazy val database: String = if (sys.env("ENVIRONMENT").equals("dev")) {
+    "mayberry-mini-trucks-dev"
+  } else {
+    "TBD"
+  }
 
   // prevents having to recreate the containers on every call
   private val containers: Map[String, CosmosContainer] =

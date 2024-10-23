@@ -18,13 +18,23 @@ class CosmosDbBuilder @Inject()(secrets: SecretManager)(implicit ec: ExecutionCo
     throttlingRetryOptions.setMaxRetryWaitTime(Duration.ofSeconds(20))
 
     if (ConfigFactory.load.getBoolean("isSecretManagerSetup")) {
-      new CosmosClientBuilder()
-        .endpoint(config.getString("regioncosmosdb.endpoint"))
-        .key(sys.env("COSMOS_DB_CONNECTION_KEY"))
-        .throttlingRetryOptions(throttlingRetryOptions)
-        .consistencyLevel(ConsistencyLevel.EVENTUAL)
-        .contentResponseOnWriteEnabled(true)
-        .buildClient()
+      if (sys.env("ENVIRONMENT").equals("dev")) {
+        new CosmosClientBuilder()
+          .endpoint("https://mayberry-mini-trucks.documents.azure.com:443/")
+          .key(sys.env("COSMOS_DB_CONNECTION_KEY"))
+          .throttlingRetryOptions(throttlingRetryOptions)
+          .consistencyLevel(ConsistencyLevel.EVENTUAL)
+          .contentResponseOnWriteEnabled(true)
+          .buildClient()
+      } else {
+        new CosmosClientBuilder()
+          .endpoint("TBD - PROD")
+          .key(sys.env("COSMOS_DB_CONNECTION_KEY"))
+          .throttlingRetryOptions(throttlingRetryOptions)
+          .consistencyLevel(ConsistencyLevel.EVENTUAL)
+          .contentResponseOnWriteEnabled(true)
+          .buildClient()
+      }
     } else {
       new CosmosClientBuilder()
         .endpoint(config.getString("regioncosmosdb.endpoint"))
