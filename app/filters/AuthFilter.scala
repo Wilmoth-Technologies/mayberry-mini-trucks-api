@@ -22,8 +22,13 @@ import scala.io.Source
 class AuthFilter @Inject()(implicit val mat: Materializer, ec: ExecutionContext) extends Filter {
 
   private val routeToRequiredScopes: Map[String, Set[String]] = Map(
-    "/api/protected-route" -> Set("manage:inventory"),
-    "/api/admin-route"     -> Set("admin:all")
+    "/management/getInventoryPhotos" -> Set("manage:inventory"),
+    "/management/getAllVin" -> Set("manage:inventory"),
+    "/management/getAllInventory" -> Set("manage:inventory"),
+    "/management/getInventoryItem" -> Set("manage:inventory"),
+    "/management/addInventory" -> Set("manage:inventory"),
+    "/management/updateInventory" -> Set("manage:inventory"),
+    "/management/deleteInventory" -> Set("manage:inventory"),
   )
 
   // Function to fetch JWKS from Auth0
