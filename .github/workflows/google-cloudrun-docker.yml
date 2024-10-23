@@ -9,7 +9,7 @@ env:
   REGION: 'us-east4'
   CLOUD_RUN_SERVICE_DEV: 'mayberry-mini-trucks-api-dev'
   CLOUD_RUN_SERVICE_PROD: 'mayberry-mini-trucks-api-prod'
-  REPOSITORY_SERVICE: 'mayberry-mini-trucks-dev'
+  REPOSITORY_SERVICE: 'mayberry-mini-trucks-api'
   IMAGE: 'mayberry-mini-trucks-api'
 
 jobs:
