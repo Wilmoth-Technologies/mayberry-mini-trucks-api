@@ -3,13 +3,14 @@ package models
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.module.scala.JsonScalaEnumeration
 import models.InventoryOptions.InventoryOptions
+import models.Status.Status
 
 import java.sql.Timestamp
 
 case class Inventory(
                     id: String,
                     vin: String,
-                    shipmentNumber: String,
+                    modelCode: String,
                     stockNumber: String,
                     make: String,
                     model: String,
@@ -22,6 +23,10 @@ case class Inventory(
                     purchaseDate: String,
                     description: String,
                     price: BigDecimal,
+                    titleInHand: Boolean,
+                    @JsonScalaEnumeration(classOf[StatusType])
+                    status: Status,
+                    embeddedVideoLink: String,
                     options: List[InventoryOption],
                     imageLinks: List[String],
                     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
@@ -33,7 +38,7 @@ case class Inventory(
 
 case class InventoryTable(
                       vin: String,
-                      shipmentNumber: String,
+                      modelCode: String,
                       stockNumber: String,
                       purchaseDate: String,
                       make: String,
@@ -41,6 +46,8 @@ case class InventoryTable(
                       year: String,
                       mileage: Int,
                       price: BigDecimal,
+                      @JsonScalaEnumeration(classOf[StatusType])
+                      status: Status,
                       actions: String = "action",
                     )
 

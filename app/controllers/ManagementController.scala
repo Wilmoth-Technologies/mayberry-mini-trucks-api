@@ -45,8 +45,8 @@ class ManagementController @Inject()(cc: ControllerComponents,
     Action.async {
       for {
         inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
-        mappedList = inventoryList.map(item => InventoryTable(item.vin, item.shipmentNumber, item.stockNumber,
-          item.purchaseDate, item.make, item.model, item.year, item.mileage, item.price))
+        mappedList = inventoryList.map(item => InventoryTable(item.vin, item.modelCode, item.stockNumber,
+          item.purchaseDate, item.make, item.model, item.year, item.mileage, item.price, item.status))
       } yield listToJson(mappedList)
     }
 
@@ -59,7 +59,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
 //TODO: Add in updatedBy field based on User Auth
   def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
     implicit request => {
-      logger.info(s"POST: Submit New Inventory: $request")
+      println(s"POST: Submit New Inventory: $request")
       val inventoryDetails = multipartRequestToObject[Inventory](request.body.dataParts.get("inventory").flatMap(_.headOption))
 
       for {
@@ -77,7 +77,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
   //TODO: Add in updatedBy field based on User Auth
   def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
     implicit request => {
-      logger.info(s"PUT: Submit Inventory: $request")
+      println(s"PUT: Submit Inventory: $request")
       val inventoryDetails = multipartRequestToObject[Inventory](request.body.dataParts.get("inventory").flatMap(_.headOption))
 
       if (areImagesUpdated) {
@@ -96,8 +96,8 @@ class ManagementController @Inject()(cc: ControllerComponents,
   }
 
   def deleteInventory(vin: String): Action[AnyContent] = Action.async {
-    logger.info(s"Deleting Inventory Item vin: $vin")
-    clearImagesIfBlobExists(vin)
+    println(s"Deleting Inventory Item vin: $vin")
+    gcsService.deleteBlob(vin)
     for {
       _ <- cosmosDb.deleteByIdAndKeyHelper(inventoryCollection, vin, vin)
     } yield NoContent
@@ -114,21 +114,12 @@ class ManagementController @Inject()(cc: ControllerComponents,
   }
 
   private def clearAndParseImages(body: MultipartFormData[Files.TemporaryFile], inventory: Inventory): Future[List[String]] = {
-    clearImagesIfBlobExists(inventory.vin)
+    gcsService.deleteBlob(inventory.vin)
     Future(body.files.zipWithIndex.map {
       case (file, index) =>
         val imageName: String = s"image-$index"
         gcsService.uploadImage(inventory.vin, imageName, file.ref.path)
     }.toList)
-  }
-
-  private def clearImagesIfBlobExists(blobName: String): Unit = {
-    if (gcsService.blobExists(blobName)) {
-      logger.info(s"Blob '$blobName' exists, proceeding to delete.")
-      gcsService.deleteBlob(blobName)
-    } else {
-      logger.info(s"Blob '$blobName' does not exist in bucket.")
-    }
   }
   /* END HELPER FUNCTIONS */
 }

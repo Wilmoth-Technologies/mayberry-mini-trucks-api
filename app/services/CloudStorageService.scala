@@ -41,25 +41,21 @@ class CloudStorageService {
     s"https://storage.googleapis.com/$GCSBucketName/$uniqueId/$fileName"
   }
 
-  // Function to check if a blob exists
-  def blobExists(blobName: String): Boolean = {
-    val storage = getStorage
-    // List objects in the bucket with the folder prefix
-    val blobs = storage.list(GCSBucketName, Storage.BlobListOption.prefix(blobName))
-    blobs.getValues.asScala.nonEmpty
-  }
-
   // Function to delete all objects in a blob
   def deleteBlob(blobName: String): Unit = {
     val storage = getStorage
     val blobs = storage.list(GCSBucketName, Storage.BlobListOption.prefix(blobName))
 
-    blobs.getValues.asScala.foreach { blob =>
-      logger.info(s"Deleting: ${blob.getName}")
-      blob.delete()
+    if(blobs.getValues.asScala.nonEmpty) {
+      blobs.getValues.asScala.foreach { blob =>
+        if(blob.getName.split("/").head.equals(blobName)) {
+          println(s"Deleting: ${blob.getName}")
+          blob.delete()
+          println(s"Blob '$blobName' deleted from bucket '$GCSBucketName'.")
+        }
+        println(s"Blob: ${blob.getName} does not match the requested to delete Blob of: $blobName")
+      }
     }
-
-    logger.info(s"Blob '$blobName' deleted from bucket '$GCSBucketName'.")
   }
 
   def getBucketContents(blobName: String): String = {
