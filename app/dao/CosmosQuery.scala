@@ -16,4 +16,11 @@ object CosmosQuery {
 
   def getAllResults()(collectionName: String): SqlQuerySpec =
     new SqlQuerySpec(s"""SELECT * FROM $collectionName c""")
+
+  def getNotSoldInventory()(collectionName: String): SqlQuerySpec =
+    new SqlQuerySpec(
+      s"""SELECT * FROM $collectionName c
+         |WHERE c.status != "Sold"
+         |AND ARRAY_LENGTH(c.imageLinks) > 1
+         |ORDER BY c.status ASC""".stripMargin)
 }

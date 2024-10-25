@@ -23,7 +23,7 @@ case class Inventory(
                     purchaseDate: String,
                     description: String,
                     price: BigDecimal,
-                    titleInHand: Boolean,
+                    titleInHand: Boolean = false,
                     @JsonScalaEnumeration(classOf[StatusType])
                     status: Status,
                     embeddedVideoLink: String,
@@ -50,6 +50,27 @@ case class InventoryTable(
                       status: Status,
                       actions: String = "action",
                     )
+
+case class InventoryPaginationData(
+                              vin: String,
+                              modelCode: String,
+                              stockNumber: String,
+                              make: String,
+                              model: String,
+                              year: String,
+                              exteriorColor: String,
+                              interiorColor: String,
+                              mileage: Int,
+                              transmission: String,
+                              engine: String,
+                              description: String,
+                              price: BigDecimal,
+                              titleInHand: Boolean,
+                              @JsonScalaEnumeration(classOf[StatusType])
+                              status: Status,
+                              options: List[InventoryOption],
+                              imageLinks: String,
+                            )
 
 case class InventoryOption(@JsonScalaEnumeration(classOf[InventoryOptionsType]) option: InventoryOptions)
 
