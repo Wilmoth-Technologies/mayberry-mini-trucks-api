@@ -4,7 +4,7 @@ import akka.stream.Materializer
 import com.azure.cosmos.models.PartitionKey
 import dao.CosmosQuery._
 import dao.{CosmosDb, CosmosQuery}
-import models.{Inventory, InventoryPaginationData}
+import models.{Inventory, InventoryLandingScroller, InventoryPaginationData}
 import play.api.Logger
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import services.CloudStorageService
@@ -28,6 +28,15 @@ class InventoryController @Inject()(cc: ControllerComponents,
         mappedList = inventoryList.map(item => InventoryPaginationData(item.vin, item.modelCode, item.stockNumber, item.make,
           item.model, item.year, item.exteriorColor, item.interiorColor, item.mileage, item.transmission, item.engine,
           item.description, item.price, item.titleInHand, item.status, item.options, item.imageLinks.headOption.get))
+      } yield listToJson(mappedList)
+    }
+
+  def fetchTopTenInventoryWithMetaData: Action[AnyContent] =
+    Action.async {
+      for {
+        inventoryList <- cosmosDb.runQuery[Inventory](getInStockInventoryLimitTen(), inventoryCollection)
+        mappedList = inventoryList.map(item => InventoryLandingScroller(item.vin, item.make, item.model, item.year,
+          item.price, item.mileage, item.imageLinks.headOption.get))
       } yield listToJson(mappedList)
     }
 

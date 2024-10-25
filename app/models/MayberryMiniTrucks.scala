@@ -72,6 +72,16 @@ case class InventoryPaginationData(
                               imageLinks: String,
                             )
 
+case class InventoryLandingScroller(
+                                    vin: String,
+                                    make: String,
+                                    model: String,
+                                    year: String,
+                                    price: BigDecimal,
+                                    mileage: Int,
+                                    imageLinks: String,
+                                  )
+
 case class InventoryOption(@JsonScalaEnumeration(classOf[InventoryOptionsType]) option: InventoryOptions)
 
 
