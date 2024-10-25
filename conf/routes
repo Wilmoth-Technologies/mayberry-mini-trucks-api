@@ -5,6 +5,11 @@
 GET           /health                                       controllers.HealthController.health
 GET           /reviews/count/:placeId                       controllers.ReviewController.getReviewCount(placeId: String)
 
+GET           /inventory/getInventoryMetaData               controllers.InventoryController.fetchAllInventoryWithMetaData
+GET           /inventory/getTopTenInventoryMetaData         controllers.InventoryController.fetchTopTenInventoryWithMetaData
+GET           /inventory/getInventoryItem                   controllers.InventoryController.fetchSingleInventoryItem(vin: String)
+GET           /inventory/getInventoryItemPhotos             controllers.InventoryController.fetchSingleInventoryItemPhotos(vin: String)
+
 GET           /management/getInventoryPhotos                controllers.ManagementController.fetchAllPhotos(vin: String)
 GET           /management/getAllVin                         controllers.ManagementController.fetchAllVin
 GET           /management/getAllInventory                   controllers.ManagementController.fetchAllInventoryItems
