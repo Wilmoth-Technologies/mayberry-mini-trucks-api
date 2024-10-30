@@ -48,6 +48,7 @@ case class InventoryTable(
                       price: BigDecimal,
                       @JsonScalaEnumeration(classOf[StatusType])
                       status: Status,
+                      titleInHand: String,
                       actions: String = "action",
                     )
 

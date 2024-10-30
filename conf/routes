@@ -3,7 +3,7 @@
 # ~~~~
 
 GET           /health                                       controllers.HealthController.health
-GET           /reviews/count/:placeId                       controllers.ReviewController.getReviewCount(placeId: String)
+GET           /review/getBusinessDetails                    controllers.ReviewController.getBusinessDetails
 
 GET           /inventory/getInventoryMetaData               controllers.InventoryController.fetchAllInventoryWithMetaData
 GET           /inventory/getTopTenInventoryMetaData         controllers.InventoryController.fetchTopTenInventoryWithMetaData

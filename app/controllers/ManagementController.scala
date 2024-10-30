@@ -46,7 +46,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
       for {
         inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
         mappedList = inventoryList.map(item => InventoryTable(item.vin, item.modelCode, item.stockNumber,
-          item.purchaseDate, item.make, item.model, item.year, item.mileage, item.price, item.status))
+          item.purchaseDate, item.make, item.model, item.year, item.mileage, item.price, item.status, if (item.titleInHand) "Yes" else "No"))
       } yield listToJson(mappedList)
     }
 

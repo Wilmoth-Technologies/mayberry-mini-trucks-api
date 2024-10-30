@@ -20,7 +20,7 @@ class ApiWSClient @Inject(){
                 attempt: Int = 1,
                 maxAttempts: Int = 5)(implicit ec: ExecutionContext): Future[WSResponse] = {
 
-    logger.debug(s"Attempt $attempt :for api : ${wsRequest}")
+    logger.debug(s"Attempt $attempt :for api : $wsRequest")
 
     wsRequest.withRequestTimeout(60.seconds).execute().map {
         response =>
