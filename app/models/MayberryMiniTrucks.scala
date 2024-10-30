@@ -85,4 +85,11 @@ case class InventoryLandingScroller(
 
 case class InventoryOption(@JsonScalaEnumeration(classOf[InventoryOptionsType]) option: InventoryOptions)
 
-
+case class Subscribers(
+                      firstName: String,
+                      lastName: String,
+                      phoneNumber: String,
+                      email: String,
+                      @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                      subscribeDate: Timestamp
+                      )

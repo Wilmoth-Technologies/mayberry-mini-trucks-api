@@ -10,6 +10,7 @@ GET           /inventory/getTopTenInventoryMetaData         controllers.Inventor
 GET           /inventory/getInventoryItem                   controllers.InventoryController.fetchSingleInventoryItem(vin: String)
 GET           /inventory/getInventoryItemPhotos             controllers.InventoryController.fetchSingleInventoryItemPhotos(vin: String)
 
+GET           /management/getSubscriberList                 controllers.ManagementController.fetchSubscriberList
 GET           /management/getInventoryPhotos                controllers.ManagementController.fetchAllPhotos(vin: String)
 GET           /management/getAllVin                         controllers.ManagementController.fetchAllVin
 GET           /management/getAllInventory                   controllers.ManagementController.fetchAllInventoryItems

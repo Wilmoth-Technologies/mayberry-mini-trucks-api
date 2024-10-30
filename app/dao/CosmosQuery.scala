@@ -7,6 +7,7 @@ import shared.AppConstants.parameterizedId
 object CosmosQuery {
   val config: Config = ConfigFactory.load()
   val inventoryCollection: String = config.getString("cosmosdb.collection.inventory")
+  val subscriberCollection: String = config.getString("cosmosdb.collection.subscriber")
 
   def getResultsById(id: String)(collectionName: String): SqlQuerySpec =
     new SqlQuerySpec(

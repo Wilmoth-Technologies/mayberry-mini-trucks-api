@@ -4,7 +4,7 @@ import akka.stream.Materializer
 import com.azure.cosmos.models.PartitionKey
 import dao.CosmosQuery.{getAllResults, getResultsById}
 import dao.{CosmosDb, CosmosQuery}
-import models.{Inventory, InventoryTable}
+import models.{Inventory, InventoryTable, Subscribers}
 import play.api.Logger
 import play.api.libs.Files
 import play.api.mvc._
@@ -22,6 +22,14 @@ class ManagementController @Inject()(cc: ControllerComponents,
 
   val logger: Logger = Logger(this.getClass)
   private val inventoryCollection: String = CosmosQuery.inventoryCollection
+  private val subscriberCollection: String = CosmosQuery.subscriberCollection
+
+  def fetchSubscriberList: Action[AnyContent] =
+    Action.async {
+      for {
+        subscriberList <- cosmosDb.runQuery[Subscribers](getAllResults(), subscriberCollection)
+      } yield listToJson(subscriberList)
+    }
 
   def fetchAllPhotos(vin: String): Action[AnyContent] =
     Action.async {

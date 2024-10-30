@@ -40,6 +40,7 @@ class CosmosDb @Inject()(builder: CosmosDbBuilder)(implicit ec: ExecutionContext
   private val containers: Map[String, CosmosContainer] =
     List(
       config.getString(s"cosmosdb.collection.inventory"),
+      config.getString(s"cosmosdb.collection.subscriber"),
     ).map(collection => collection -> createCosmosContainer(collection)
     ).toMap
 
