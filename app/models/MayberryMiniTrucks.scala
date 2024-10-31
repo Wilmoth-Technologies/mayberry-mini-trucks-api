@@ -93,3 +93,11 @@ case class Subscribers(
                       @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                       subscribeDate: Timestamp
                       )
+
+case class Notification(
+                         id: String,
+                         startDate: String,
+                         endDate: String,
+                         description: String,
+                         actions: String = "action",
+                       )

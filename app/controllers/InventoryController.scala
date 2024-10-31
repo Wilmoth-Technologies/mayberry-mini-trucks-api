@@ -1,7 +1,5 @@
 package controllers
 
-import akka.stream.Materializer
-import com.azure.cosmos.models.PartitionKey
 import dao.CosmosQuery._
 import dao.{CosmosDb, CosmosQuery}
 import models.{Inventory, InventoryLandingScroller, InventoryPaginationData}
@@ -16,7 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class InventoryController @Inject()(cc: ControllerComponents,
                                     gcsService: CloudStorageService,
                                     cosmosDb: CosmosDb)
-                                   (implicit ec: ExecutionContext, mat: Materializer) extends AbstractController(cc) {
+                                   (implicit ec: ExecutionContext) extends AbstractController(cc) {
 
   val logger: Logger = Logger(this.getClass)
   private val inventoryCollection: String = CosmosQuery.inventoryCollection
@@ -43,7 +41,7 @@ class InventoryController @Inject()(cc: ControllerComponents,
   def fetchSingleInventoryItem(vin: String): Action[AnyContent] =
     Action.async {
       for {
-        inventoryItem <- cosmosDb.runQuery[Inventory](getResultsById(vin), inventoryCollection, Some(new PartitionKey(vin)))
+        inventoryItem <- cosmosDb.runQuery[Inventory](getResultsById(vin), inventoryCollection)
       } yield listToJson(inventoryItem)
     }
 
