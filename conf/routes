@@ -12,6 +12,8 @@ GET           /inventory/getInventoryItemPhotos             controllers.Inventor
 
 GET           /notification/getNotification                 controllers.NotificationController.fetchNotificationsByDate(date: String)
 
+POST          /add/subscriber                               controllers.SubscriptionController.addSubscriber
+
 GET           /management/getNotificationList               controllers.ManagementController.fetchNotificationList
 GET           /management/getSubscriberList                 controllers.ManagementController.fetchSubscriberList
 GET           /management/getInventoryPhotos                controllers.ManagementController.fetchAllPhotos(vin: String)

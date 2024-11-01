@@ -86,6 +86,7 @@ case class InventoryLandingScroller(
 case class InventoryOption(@JsonScalaEnumeration(classOf[InventoryOptionsType]) option: InventoryOptions)
 
 case class Subscribers(
+                      id: String,
                       firstName: String,
                       lastName: String,
                       phoneNumber: String,
