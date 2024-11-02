@@ -48,6 +48,7 @@ case class InventoryTable(
                       price: BigDecimal,
                       @JsonScalaEnumeration(classOf[StatusType])
                       status: Status,
+                      titleInHand: String,
                       actions: String = "action",
                     )
 
@@ -84,4 +85,30 @@ case class InventoryLandingScroller(
 
 case class InventoryOption(@JsonScalaEnumeration(classOf[InventoryOptionsType]) option: InventoryOptions)
 
+case class Subscribers(
+                      id: String,
+                      firstName: String,
+                      lastName: String,
+                      phoneNumber: String,
+                      email: String,
+                      @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                      subscribeDate: Timestamp
+                      )
 
+case class Notification(
+                         id: String,
+                         startDate: String,
+                         endDate: String,
+                         description: String,
+                         actions: String = "action",
+                       )
+
+case class ContactRequest(
+                         firstName: String,
+                         lastName: String,
+                         email: String,
+                         phoneNumber: String,
+                         description: String,
+                         vin: String = "",
+                         isFailedFilter: Boolean = false
+                         )

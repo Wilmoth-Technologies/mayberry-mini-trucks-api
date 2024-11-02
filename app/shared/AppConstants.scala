@@ -6,4 +6,5 @@ object AppConstants {
   final val CosmosDeleteStatusCode = 204
   final val GCSBucketName = "mayberry-mini-trucks-inventory-images"
   final val parameterizedId = "@id"
+  final val parameterizedDate = "@date"
 }

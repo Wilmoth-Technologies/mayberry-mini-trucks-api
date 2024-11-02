@@ -2,11 +2,13 @@ package dao
 
 import com.azure.cosmos.models.{SqlParameter, SqlQuerySpec}
 import com.typesafe.config.{Config, ConfigFactory}
-import shared.AppConstants.parameterizedId
+import shared.AppConstants.{parameterizedDate, parameterizedId}
 
 object CosmosQuery {
   val config: Config = ConfigFactory.load()
   val inventoryCollection: String = config.getString("cosmosdb.collection.inventory")
+  val subscriberCollection: String = config.getString("cosmosdb.collection.subscriber")
+  val notificationCollection: String = config.getString("cosmosdb.collection.notification")
 
   def getResultsById(id: String)(collectionName: String): SqlQuerySpec =
     new SqlQuerySpec(
@@ -31,4 +33,14 @@ object CosmosQuery {
          |AND c.status != "Pending Sale"
          |AND ARRAY_LENGTH(c.imageLinks) >= 1
          |OFFSET 0 LIMIT 10""".stripMargin)
+
+  def getNotificationWithinWindow(date: String)(collectionName: String): SqlQuerySpec = {
+    new SqlQuerySpec(
+      s"""SELECT * FROM $collectionName c
+         |WHERE c.startDate <= $parameterizedDate
+         |AND c.endDate >= $parameterizedDate
+         |ORDER BY c.startDate DESC OFFSET 0 LIMIT 1""".stripMargin,
+      List(new SqlParameter(parameterizedDate, date)): _*
+    )
+  }
 }
