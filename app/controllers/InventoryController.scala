@@ -2,22 +2,51 @@ package controllers
 
 import dao.CosmosQuery._
 import dao.{CosmosDb, CosmosQuery}
-import models.{Inventory, InventoryLandingScroller, InventoryPaginationData}
+import models.{ContactRequest, Inventory, InventoryLandingScroller, InventoryPaginationData}
 import play.api.Logger
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
-import services.CloudStorageService
-import shared.AppFunctions.listToJson
+import services.{CloudStorageService, EmailService}
+import shared.AppFunctions.{listToJson, requestToObject}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class InventoryController @Inject()(cc: ControllerComponents,
                                     gcsService: CloudStorageService,
-                                    cosmosDb: CosmosDb)
+                                    cosmosDb: CosmosDb,
+                                    emailService: EmailService)
                                    (implicit ec: ExecutionContext) extends AbstractController(cc) {
 
   val logger: Logger = Logger(this.getClass)
   private val inventoryCollection: String = CosmosQuery.inventoryCollection
+
+  def contactUs: Action[AnyContent] =
+    Action.async {
+      implicit request =>
+        val contactRequest = requestToObject[ContactRequest](request)
+        println(s"Sending contact request for: ${contactRequest.email}")
+
+        val subject: String = if (contactRequest.isFailedFilter) {
+          s"Contact Request on Failed Inventory Search from ${contactRequest.firstName} ${contactRequest.lastName}"
+        } else {
+          s"Contact Request on VIN: ${contactRequest.vin} from ${contactRequest.firstName} ${contactRequest.lastName}"
+        }
+
+        val requestMap = Map(
+          "first_name" -> contactRequest.firstName,
+          "last_name" -> contactRequest.lastName,
+          "description" -> contactRequest.description,
+          "phone_number" -> contactRequest.phoneNumber,
+          "email" -> contactRequest.email,
+          "listing_link" -> s"http://localhost:3000/inventory/${contactRequest.vin}",
+          "vin" -> contactRequest.vin,
+          "subject" -> subject
+        )
+        for {
+          _ <- emailService.sendEmail("gabewilmoth@gmail.com", "d-d955035d6b614bb4b4b68ab6a956dc50", requestMap)
+        } yield Created
+
+    }
 
   def fetchAllInventoryWithMetaData: Action[AnyContent] =
     Action.async {

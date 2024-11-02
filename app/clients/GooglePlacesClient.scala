@@ -23,18 +23,15 @@ class GooglePlacesClient @Inject()(ws: WSClient, apiWSClient: ApiWSClient)
 
   def fetchBusinessDetails(): Future[Result] = {
     val requestUrl = s"$placesApiUrl?place_id=$placeId&key=$apiKey"
-
-    val url = s"https://places.googleapis.com/v1/places/$placeId"
     val request: WSRequest = ws.url(requestUrl)
       .addHttpHeaders(
         "Content-Type" -> "application/json",
-        "X-Goog-Api-Key" -> "AIzaSyC3rzUoA_HF5gMUgPbJzk3ZzX4pGSqL4NY",
+        "X-Goog-Api-Key" -> apiKey,
         "X-Goog-FieldMask" -> "userRatingCount"
       ).withMethod("GET")
 
     apiWSClient.invokeAPI(request, successResponseCodes)
       .map(response => {
-        println(response.body)
         AppFunctions.objectMapper.readValue(response.body, classOf[Result])
       })
   }

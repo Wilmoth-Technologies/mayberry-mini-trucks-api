@@ -9,10 +9,12 @@ GET           /inventory/getInventoryMetaData               controllers.Inventor
 GET           /inventory/getTopTenInventoryMetaData         controllers.InventoryController.fetchTopTenInventoryWithMetaData
 GET           /inventory/getInventoryItem                   controllers.InventoryController.fetchSingleInventoryItem(vin: String)
 GET           /inventory/getInventoryItemPhotos             controllers.InventoryController.fetchSingleInventoryItemPhotos(vin: String)
+POST          /inventory/contactus                          controllers.InventoryController.contactUs
 
 GET           /notification/getNotification                 controllers.NotificationController.fetchNotificationsByDate(date: String)
 
 POST          /add/subscriber                               controllers.SubscriptionController.addSubscriber
+DELETE        /remove/subscriber                            controllers.SubscriptionController.removeSubscriber(email: String)
 
 GET           /management/getNotificationList               controllers.ManagementController.fetchNotificationList
 GET           /management/getSubscriberList                 controllers.ManagementController.fetchSubscriberList

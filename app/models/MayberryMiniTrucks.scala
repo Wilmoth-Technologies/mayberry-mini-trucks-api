@@ -102,3 +102,13 @@ case class Notification(
                          description: String,
                          actions: String = "action",
                        )
+
+case class ContactRequest(
+                         firstName: String,
+                         lastName: String,
+                         email: String,
+                         phoneNumber: String,
+                         description: String,
+                         vin: String = "",
+                         isFailedFilter: Boolean = false
+                         )
