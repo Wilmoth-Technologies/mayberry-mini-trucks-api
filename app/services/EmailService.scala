@@ -13,7 +13,7 @@ class EmailService @Inject()()(implicit ec: ExecutionContext) {
   val config: Config = ConfigFactory.load()
 
   private val apiKey = if (ConfigFactory.load.getBoolean("isSecretManagerSetup")) {
-    config.getString("sendgrid.apiKey")
+    sys.env("SEND_GRID_API_KEY")
   } else {
     ""
   }
