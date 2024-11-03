@@ -10,6 +10,8 @@ import play.api.mvc.{AnyContent, Request, Result}
 import play.api.mvc.Results.{NotFound, _}
 
 import java.sql.Timestamp
+import java.text.NumberFormat
+import java.util.Locale
 
 object AppFunctions {
   val objectMapper: JsonMapper with ClassTagExtensions = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
@@ -49,4 +51,19 @@ object AppFunctions {
   def toSha256(message: String): String =
     String.format("%064x", new java.math.BigInteger(1,
       java.security.MessageDigest.getInstance("SHA-256").digest(message.getBytes("UTF-8"))))
+
+  def formatPrice(price: BigDecimal): String = {
+    val formatter = NumberFormat.getCurrencyInstance(Locale.US)
+    formatter.format(price)
+  }
+
+  def formatNumberWithCommas(numberString: String): String = {
+    try {
+      val number = numberString.toDouble
+      val formatter = NumberFormat.getInstance
+      formatter.format(number)
+    } catch {
+      case _: NumberFormatException => "Invalid number"
+    }
+  }
 }

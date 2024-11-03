@@ -1,9 +1,12 @@
 package services
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.sendgrid.{Method, Request, SendGrid}
 import com.sendgrid.helpers.mail.Mail
 import com.sendgrid.helpers.mail.objects.{Email, Personalization}
 import com.typesafe.config.{Config, ConfigFactory}
+import models.InventoryTemplateTopLevel
+import shared.AppFunctions.objectMapper
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,6 +36,31 @@ class EmailService @Inject()()(implicit ec: ExecutionContext) {
     dynamicData.foreach { case (key, value) =>
       personalization.addDynamicTemplateData(key, value)
     }
+    mail.addPersonalization(personalization)
+
+    val request = new Request()
+    request.setMethod(Method.POST)
+    request.setEndpoint("mail/send")
+    request.setBody(mail.build())
+
+    val response = sendGridClient.api(request)
+    if (response.getStatusCode >= 400) {
+      throw new Exception(s"Failed to send email: ${response.getBody}")
+    }
+  }
+
+  def sendEmailWithStringData(to: String, templateId: String, dynamicData: InventoryTemplateTopLevel): Future[Unit] = Future {
+    val from = new Email("gabewilmoth@gmail.com")
+    val toEmail = new Email(to)
+    val mail = new Mail()
+    mail.setFrom(from)
+    mail.setTemplateId(templateId)
+
+    val personalization = new Personalization()
+    personalization.addTo(toEmail)
+
+    val jsonData: JsonNode = objectMapper.valueToTree(dynamicData)
+    personalization.addDynamicTemplateData("vehicles", jsonData)
     mail.addPersonalization(personalization)
 
     val request = new Request()
