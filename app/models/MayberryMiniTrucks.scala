@@ -113,7 +113,6 @@ case class ContactRequest(
                          isFailedFilter: Boolean = false
                          )
 
-case class InventoryTemplateTopLevel(vehicles: List[InventoryDetailsForTemplate])
 
 case class InventoryDetailsForTemplate(
                                       photoUrl: String,

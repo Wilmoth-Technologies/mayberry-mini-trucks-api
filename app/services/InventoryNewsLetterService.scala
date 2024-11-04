@@ -3,7 +3,7 @@ package services
 import akka.actor.{ActorSystem, Cancellable}
 import dao.{CosmosDb, CosmosQuery}
 import dao.CosmosQuery.{getAllResults, getInStockInventoryAddedInLastWeek}
-import models.{Inventory, InventoryDetailsForTemplate, InventoryTemplateTopLevel, Subscribers}
+import models.{Inventory, Subscribers}
 import shared.AppFunctions._
 
 import java.time.format.DateTimeFormatter
@@ -27,26 +27,29 @@ class InventoryNewsLetterService @Inject()(actorSystem: ActorSystem,
     val sevenDaysAgo = Instant.now().minus(7, ChronoUnit.DAYS)
     val formattedDate = DateTimeFormatter.ISO_INSTANT.format(sevenDaysAgo)
 
-
     for {
       inventoryList <- cosmosDb.runQuery[Inventory](getInStockInventoryAddedInLastWeek(formattedDate), inventoryCollection)
-      _ = println(inventoryList)
-      inventoryTemplate = inventoryList.map(item => InventoryDetailsForTemplate(
-        item.imageLinks.head,
-        item.year,
-        item.make,
-        item.model,
-        formatPrice(item.price),
-        formatNumberWithCommas(item.mileage.toString),
-        item.engine,
-        item.transmission,
-        item.exteriorColor,
-        s"http://localhost:3000/inventory/${item.vin}",
-      ))
-
+      inventoryMap = inventoryList.zipWithIndex.flatMap {
+        case (vehicle, index) => Map(
+          s"photoUrl$index" -> vehicle.imageLinks.head,
+          s"year$index" -> vehicle.year,
+          s"make$index" -> vehicle.make,
+          s"model$index" -> vehicle.model,
+          s"price$index" -> formatPrice(vehicle.price),
+          s"mileage$index" -> formatNumberWithCommas(vehicle.mileage.toString),
+          s"engine$index" -> vehicle.engine,
+          s"transmission$index" -> vehicle.transmission,
+          s"color$index" -> vehicle.exteriorColor,
+          s"itemURL$index" -> s"http://localhost:3000/inventory/${vehicle.vin}"
+        )
+      }.toMap
       subscriberList <- cosmosDb.runQuery[Subscribers](getAllResults(), subscriberCollection)
       _ = subscriberList.map(subscriber =>
-        emailService.sendEmailWithStringData(subscriber.email, "d-965b9c678e364190a1d8aef756faa080", InventoryTemplateTopLevel(inventoryTemplate))
+        if(inventoryList.length >= 6) {
+          emailService.sendEmail(subscriber.email, "d-965b9c678e364190a1d8aef756faa080", inventoryMap)
+        } else if (inventoryList.length >= 3) {
+          emailService.sendEmail(subscriber.email, "d-287fccd69f8e479c88b1234cb078b5f1", inventoryMap)
+        }
       )
     } yield ""
   }
@@ -66,7 +69,7 @@ class InventoryNewsLetterService @Inject()(actorSystem: ActorSystem,
 
   // Schedule the task to run weekly on Wednesdays at 9 AM EST
   private val cancellable: Cancellable = actorSystem.scheduler.scheduleAtFixedRate(
-    10.millis, //TODO: Call calculateInitialDelay as this will ensure this runs every Wednesday
+    calculateInitialDelay(), //Change me to 10.millis to run quicker at startup
     7.days
   )(new Runnable {
     override def run(): Unit = task()
