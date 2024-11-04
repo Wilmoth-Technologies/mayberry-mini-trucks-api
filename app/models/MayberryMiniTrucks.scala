@@ -112,3 +112,17 @@ case class ContactRequest(
                          vin: String = "",
                          isFailedFilter: Boolean = false
                          )
+
+
+case class InventoryDetailsForTemplate(
+                                      photoUrl: String,
+                                      year: String,
+                                      make: String,
+                                      model: String,
+                                      price: String,
+                                      mileage: String,
+                                      engine: String,
+                                      transmission: String,
+                                      color: String,
+                                      itemUrl: String
+                                      )
