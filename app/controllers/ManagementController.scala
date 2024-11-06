@@ -123,12 +123,12 @@ class ManagementController @Inject()(cc: ControllerComponents,
         for {
           imageLinkList <- clearAndParseImages(request.body, inventoryDetails)
           _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageLinkList,
-            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.vin)
+            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.year)
         } yield NoContent
       } else {
         for {
           _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin,
-            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.vin)
+            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.year)
         } yield NoContent
       }
     }
