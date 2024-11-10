@@ -99,6 +99,9 @@ jobs:
           image: '${{ env.REGION }}-docker.pkg.dev/${{ vars.PROJECT_ID }}/${{ env.REPOSITORY_SERVICE }}/${{ env.IMAGE }}:${{ github.sha }}'
           env_vars: |-
             ENVIRONMENT=prod
+          secrets: |-
+            /secrets/gcp-service-account-json=gcp-service-account-json:latest
+            COSMOS_DB_CONNECTION_KEY=dev-cosmosdb-key:latest
 
       - name: 'Show output'
         run: |2-

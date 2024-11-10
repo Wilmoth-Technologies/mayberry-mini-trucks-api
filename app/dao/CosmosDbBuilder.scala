@@ -28,7 +28,7 @@ class CosmosDbBuilder @Inject()(secrets: SecretManager)(implicit ec: ExecutionCo
           .buildClient()
       } else {
         new CosmosClientBuilder()
-          .endpoint("TBD - PROD")
+          .endpoint("https://mayberry-mini-trucks.documents.azure.com:443/")
           .key(sys.env("COSMOS_DB_CONNECTION_KEY"))
           .throttlingRetryOptions(throttlingRetryOptions)
           .consistencyLevel(ConsistencyLevel.EVENTUAL)
@@ -37,7 +37,7 @@ class CosmosDbBuilder @Inject()(secrets: SecretManager)(implicit ec: ExecutionCo
       }
     } else {
       new CosmosClientBuilder()
-        .endpoint(config.getString("regioncosmosdb.endpoint"))
+        .endpoint("https://mayberry-mini-trucks.documents.azure.com:443/")
         .key(config.getString("cosmosdbKey"))
         .throttlingRetryOptions(throttlingRetryOptions)
         .consistencyLevel(ConsistencyLevel.EVENTUAL)

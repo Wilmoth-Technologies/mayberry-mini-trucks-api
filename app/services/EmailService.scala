@@ -21,7 +21,7 @@ class EmailService @Inject()()(implicit ec: ExecutionContext) {
   private val sendGridClient = new SendGrid(apiKey)
 
   def sendEmail(to: String, templateId: String, dynamicData: Map[String, String]): Future[Unit] = Future {
-    val from = new Email("gabewilmoth@gmail.com")
+    val from = new Email("sales@mayberryminitrucks.com")
     val toEmail = new Email(to)
     val mail = new Mail()
     mail.setFrom(from)

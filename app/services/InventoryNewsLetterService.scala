@@ -40,7 +40,7 @@ class InventoryNewsLetterService @Inject()(actorSystem: ActorSystem,
           s"engine$index" -> vehicle.engine,
           s"transmission$index" -> vehicle.transmission,
           s"color$index" -> vehicle.exteriorColor,
-          s"itemURL$index" -> s"http://localhost:3000/inventory/${vehicle.vin}"
+          s"itemURL$index" -> s"http://mayberryminitrucks.com/inventory/${vehicle.vin}"
         )
       }.toMap
       subscriberList <- cosmosDb.runQuery[Subscribers](getAllResults(), subscriberCollection)

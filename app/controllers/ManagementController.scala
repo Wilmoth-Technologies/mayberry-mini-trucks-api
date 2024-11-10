@@ -96,7 +96,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
       } yield listToJson(inventoryItem)
     }
 //TODO: Add in updatedBy field based on User Auth
-  def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
+  def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
     implicit request => {
       println(s"POST: Submit New Inventory: $request")
       val inventoryDetails = multipartRequestToObject[Inventory](request.body.dataParts.get("inventory").flatMap(_.headOption))
@@ -114,7 +114,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
   }
   //TODO: Add in updatedBy field based on User Auth
-  def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData).async {
+  def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
     implicit request => {
       println(s"PUT: Submit Inventory: $request")
       val inventoryDetails = multipartRequestToObject[Inventory](request.body.dataParts.get("inventory").flatMap(_.headOption))
@@ -134,11 +134,11 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
   }
 
-  def deleteInventory(vin: String): Action[AnyContent] = Action.async {
+  def deleteInventory(vin: String, year: String): Action[AnyContent] = Action.async {
     println(s"Deleting Inventory Item vin: $vin")
     gcsService.deleteBlob(vin)
     for {
-      _ <- cosmosDb.deleteByIdAndKeyHelper(inventoryCollection, vin, vin)
+      _ <- cosmosDb.deleteByIdAndKeyHelper(inventoryCollection, vin, year)
     } yield NoContent
   }
 
@@ -149,7 +149,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
       case (file, index) =>
         val imageName: String = s"image-$index"
         gcsService.uploadImage(inventory.vin, imageName, file.ref.path)
-    }.toList)
+    }.toList.filter(res => res != ""))
   }
 
   private def clearAndParseImages(body: MultipartFormData[Files.TemporaryFile], inventory: Inventory): Future[List[String]] = {
