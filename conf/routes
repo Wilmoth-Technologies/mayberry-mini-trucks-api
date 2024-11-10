@@ -25,5 +25,5 @@ GET           /management/getInventoryItem                  controllers.Manageme
 POST          /management/addInventory                      controllers.ManagementController.submitNewInventory
 POST          /management/addNotification                   controllers.ManagementController.addNotification
 PUT           /management/updateInventory                   controllers.ManagementController.submitInventoryEdit(areImagesUpdated: Boolean)
-DELETE        /management/deleteInventory                   controllers.ManagementController.deleteInventory(vin: String)
+DELETE        /management/deleteInventory                   controllers.ManagementController.deleteInventory(vin: String, year: String)
 DELETE        /management/deleteNotification                controllers.ManagementController.deleteNotification(id: String)

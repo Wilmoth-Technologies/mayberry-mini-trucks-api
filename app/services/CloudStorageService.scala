@@ -3,14 +3,17 @@ package services
 import com.google.auth.oauth2.ServiceAccountCredentials
 import com.google.cloud.storage.{BlobId, BlobInfo, Bucket, Storage, StorageOptions}
 import com.typesafe.config.{Config, ConfigFactory}
+import org.imgscalr.Scalr
 import play.api.Logger
 import shared.AppConstants.GCSBucketName
 import shared.AppFunctions.toJson
 
-import java.io.FileInputStream
+import java.awt.image.BufferedImage
+import java.io.{ByteArrayOutputStream, File, FileInputStream}
 import java.nio.channels.Channels
-import java.nio.file.Files
 import java.nio.file.Path
+import javax.imageio.stream.ImageOutputStream
+import javax.imageio.{ImageIO, ImageWriter}
 import scala.collection.JavaConverters.iterableAsScalaIterableConverter
 
 class CloudStorageService {
@@ -35,10 +38,27 @@ class CloudStorageService {
     val blobId = BlobId.of(GCSBucketName, s"$uniqueId/$fileName")
     val blobInfo = BlobInfo.newBuilder(blobId).build()
 
-    val fileBytes = Files.readAllBytes(filePath)
-    storage.create(blobInfo, fileBytes)
+    if (filePath.toFile.exists() && filePath.toFile.length() > 0) {
+      // Load the image file
+      val originalImage: BufferedImage = ImageIO.read(filePath.toFile)
 
-    s"https://storage.googleapis.com/$GCSBucketName/$uniqueId/$fileName"
+      if (originalImage != null) {
+        // Compress and resize the image
+        val imageWithoutExif = stripExifData(originalImage, filePath.toFile)
+        val compressedImage: BufferedImage = Scalr.resize(imageWithoutExif, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_EXACT, 800, 600)
+
+        // Convert to byte array
+        val byteArrayOutputStream = new ByteArrayOutputStream()
+        ImageIO.write(compressedImage, "jpg", byteArrayOutputStream)
+        val imageBytes = byteArrayOutputStream.toByteArray
+        storage.create(blobInfo, imageBytes)
+        s"https://storage.googleapis.com/$GCSBucketName/$uniqueId/$fileName"
+      } else {
+        ""
+      }
+    } else {
+      ""
+    }
   }
 
   // Function to delete all objects in a blob
@@ -79,4 +99,18 @@ class CloudStorageService {
 
     toJson(imageData)
   }
+
+  def stripExifData(image: BufferedImage, originalFile: File): BufferedImage = {
+    val writer: ImageWriter = ImageIO.getImageWritersByFormatName("jpeg").next()
+    val ios: ImageOutputStream = ImageIO.createImageOutputStream(originalFile)
+    writer.setOutput(ios)
+
+    val imageType = image.getType
+    writer.write(null, new javax.imageio.IIOImage(image, null, null), null)
+    ios.close()
+
+    // Read the stripped image back from the original file
+    ImageIO.read(originalFile)
+  }
+
 }

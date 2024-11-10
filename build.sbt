@@ -23,7 +23,8 @@ lazy val root = (project in file("."))
       "io.projectreactor.netty" % "reactor-netty-http" % "1.1.1",
       "com.typesafe.play" %% "filters-helpers" % "2.8.8",
       "com.sendgrid" % "sendgrid-java" % "4.7.1",
-    ),
+      "org.imgscalr" % "imgscalr-lib" % "4.2", // Image compression library
+),
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.14.3",
     dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.17.2",
 //    scalacOptions ++= Seq(

@@ -33,7 +33,7 @@ class CosmosDb @Inject()(builder: CosmosDbBuilder)(implicit ec: ExecutionContext
   lazy val database: String = if (sys.env("ENVIRONMENT").equals("dev")) {
     "mayberry-mini-trucks-dev"
   } else {
-    "TBD"
+    "mayberry-mini-trucks-prod"
   }
 
   // prevents having to recreate the containers on every call

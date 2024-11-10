@@ -38,12 +38,12 @@ class InventoryController @Inject()(cc: ControllerComponents,
           "description" -> contactRequest.description,
           "phone_number" -> contactRequest.phoneNumber,
           "email" -> contactRequest.email,
-          "listing_link" -> s"http://localhost:3000/inventory/${contactRequest.vin}",
+          "listing_link" -> s"http://mayberryminitrucks.com/inventory/${contactRequest.vin}",
           "vin" -> contactRequest.vin,
           "subject" -> subject
         )
         for {
-          _ <- emailService.sendEmail("gabewilmoth@gmail.com", "d-d955035d6b614bb4b4b68ab6a956dc50", requestMap)
+          _ <- emailService.sendEmail("sales@mayberryminitrucks.com", "d-d955035d6b614bb4b4b68ab6a956dc50", requestMap)
         } yield Created
 
     }
