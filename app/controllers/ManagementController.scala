@@ -1,5 +1,6 @@
 package controllers
 
+import actions.AuthAction
 import akka.stream.Materializer
 import com.azure.cosmos.models.PartitionKey
 import dao.CosmosQuery.{getAllResults, getResultsById}
@@ -8,18 +9,20 @@ import models.{Inventory, InventoryTable, Notification, Subscribers}
 import play.api.Logger
 import play.api.libs.Files
 import play.api.mvc._
-import services.CloudStorageService
+import services.{CloudStorageService, InventoryNewsLetterService}
 import shared.AppFunctions.{currentDateTimeInTimeStamp, listToJson, multipartRequestToObject, requestToObject, toSha256}
 import shared.exceptions.RecordAlreadyExists
+
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class ManagementController @Inject()(cc: ControllerComponents,
                                      gcsService: CloudStorageService,
-                                     cosmosDb: CosmosDb)
+                                     cosmosDb: CosmosDb,
+                                     inventoryNewsLetterService: InventoryNewsLetterService,
+                                     authAction: AuthAction)
                                     (implicit ec: ExecutionContext, mat: Materializer) extends AbstractController(cc) {
 
   val logger: Logger = Logger(this.getClass)
@@ -27,15 +30,22 @@ class ManagementController @Inject()(cc: ControllerComponents,
   private val subscriberCollection: String = CosmosQuery.subscriberCollection
   private val notificationCollection: String = CosmosQuery.notificationCollection
 
+  def triggerInventoryNewsLetter: Action[AnyContent] =
+    authAction.async {
+      println("Starting Manual Execution of Inventory Email Newsletter")
+      inventoryNewsLetterService.executeEmailNewsLetter()
+      Future(Ok("Triggered News Letter"))
+    }
+
   def fetchNotificationList: Action[AnyContent] =
-    Action.async {
+    authAction.async {
       for {
         notificationList <- cosmosDb.runQuery[Notification](getAllResults(), notificationCollection)
         mappedRes = notificationList.map(item => item.copy(startDate = convertDateFormat(item.startDate), endDate = convertDateFormat(item.endDate)))
       } yield listToJson(mappedRes)
     }
 
-  def deleteNotification(id: String): Action[AnyContent] = Action.async {
+  def deleteNotification(id: String): Action[AnyContent] = authAction.async {
     println(s"Deleting Notification Item id: $id")
     for {
       _ <- cosmosDb.deleteByIdAndKeyHelper(notificationCollection, id, id)
@@ -43,7 +53,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
   }
 
   def addNotification: Action[AnyContent] =
-    Action.async {
+    authAction.async {
       implicit request =>
         val notification = requestToObject[Notification](request)
         val notificationId = toSha256(notification.startDate + notification.endDate + notification.description)
@@ -56,14 +66,14 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
 
   def fetchSubscriberList: Action[AnyContent] =
-    Action.async {
+    authAction.async {
       for {
         subscriberList <- cosmosDb.runQuery[Subscribers](getAllResults(), subscriberCollection)
       } yield listToJson(subscriberList)
     }
 
   def fetchAllPhotos(vin: String): Action[AnyContent] =
-    Action.async {
+    authAction.async {
       try {
         Future(Ok(gcsService.getBucketContents(vin)))
       } catch {
@@ -73,7 +83,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
 
   def fetchAllVin: Action[AnyContent] =
-    Action.async {
+    authAction.async {
       for {
         inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
         mappedList = inventoryList.map(item => item.vin)
@@ -81,7 +91,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
 
   def fetchAllInventoryItems: Action[AnyContent] =
-    Action.async {
+    authAction.async {
       for {
         inventoryList <- cosmosDb.runQuery[Inventory](getAllResults(), inventoryCollection)
         mappedList = inventoryList.map(item => InventoryTable(item.vin, item.modelCode, item.stockNumber,
@@ -90,13 +100,13 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
 
   def fetchSingleInventoryItem(vin: String): Action[AnyContent] =
-    Action.async {
+    authAction.async {
       for {
         inventoryItem <- cosmosDb.runQuery[Inventory](getResultsById(vin), inventoryCollection)
       } yield listToJson(inventoryItem)
     }
 //TODO: Add in updatedBy field based on User Auth
-  def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
+  def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = authAction(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
     implicit request => {
       println(s"POST: Submit New Inventory: $request")
       val inventoryDetails = multipartRequestToObject[Inventory](request.body.dataParts.get("inventory").flatMap(_.headOption))
@@ -114,7 +124,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
   }
   //TODO: Add in updatedBy field based on User Auth
-  def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = Action(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
+  def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = authAction(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
     implicit request => {
       println(s"PUT: Submit Inventory: $request")
       val inventoryDetails = multipartRequestToObject[Inventory](request.body.dataParts.get("inventory").flatMap(_.headOption))
@@ -134,7 +144,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
     }
   }
 
-  def deleteInventory(vin: String, year: String): Action[AnyContent] = Action.async {
+  def deleteInventory(vin: String, year: String): Action[AnyContent] = authAction.async {
     println(s"Deleting Inventory Item vin: $vin")
     gcsService.deleteBlob(vin)
     for {

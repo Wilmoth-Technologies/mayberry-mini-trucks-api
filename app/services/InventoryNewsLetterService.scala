@@ -22,8 +22,13 @@ class InventoryNewsLetterService @Inject()(actorSystem: ActorSystem,
   private val subscriberCollection: String = CosmosQuery.subscriberCollection
 
   // Define the task to run
-  def task(): Unit = {
+  private def task(): Unit = {
     println("Running scheduled task at " + ZonedDateTime.now(ZoneId.of("America/New_York")))
+    executeEmailNewsLetter()
+  }
+
+  def executeEmailNewsLetter() : Unit = {
+    println("Executing Inventory News Letter at " + ZonedDateTime.now(ZoneId.of("America/New_York")))
     val sevenDaysAgo = Instant.now().minus(7, ChronoUnit.DAYS)
     val formattedDate = DateTimeFormatter.ISO_INSTANT.format(sevenDaysAgo)
 
