@@ -10,7 +10,14 @@ class CSRFController @Inject()(val controllerComponents: ControllerComponents) e
   def csrfToken() = Action { implicit request =>
     // Get the token from the current request
     CSRF.getToken(request).map { token =>
-      Ok.withHeaders("Csrf-Token" -> token.value)
+      val csrfCookie = Cookie(
+        name = "PLAY_CSRF_TOKEN",
+        value = token.value,
+        httpOnly = false,
+        secure = true,  // Ensure the cookie is sent over HTTPS only
+        sameSite = Some(play.api.mvc.Cookie.SameSite.None)  // Allow the cookie to be sent in cross-origin requests
+      )
+      Ok.withHeaders("Csrf-Token" -> token.value).withCookies(csrfCookie)
     }.getOrElse {
       BadRequest("No CSRF token could be generated")
     }
