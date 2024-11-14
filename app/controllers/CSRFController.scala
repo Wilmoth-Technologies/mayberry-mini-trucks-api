@@ -15,7 +15,8 @@ class CSRFController @Inject()(val controllerComponents: ControllerComponents) e
         value = token.value,
         httpOnly = false,
         secure = true,  // Ensure the cookie is sent over HTTPS only
-        sameSite = Some(play.api.mvc.Cookie.SameSite.None)  // Allow the cookie to be sent in cross-origin requests
+        sameSite = Some(play.api.mvc.Cookie.SameSite.None),  // Allow the cookie to be sent in cross-origin requests
+        domain = Some(".mayberryminitrucks.com")   // Allow access from all subdomains (including api.mayberryminitrucks.com)
       )
       Ok.withHeaders("Csrf-Token" -> token.value).withCookies(csrfCookie)
     }.getOrElse {
