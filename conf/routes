@@ -16,6 +16,8 @@ GET           /notification/getNotification                 controllers.Notifica
 POST          /add/subscriber                               controllers.SubscriptionController.addSubscriber
 DELETE        /remove/subscriber                            controllers.SubscriptionController.removeSubscriber(email: String)
 
+GET           /csrfToken                                    controllers.CSRFController.csrfToken()
+
 GET           /management/getNotificationList               controllers.ManagementController.fetchNotificationList
 GET           /management/getSubscriberList                 controllers.ManagementController.fetchSubscriberList
 GET           /management/getInventoryPhotos                controllers.ManagementController.fetchAllPhotos(vin: String)
