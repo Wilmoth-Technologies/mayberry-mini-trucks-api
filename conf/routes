@@ -10,6 +10,7 @@ GET           /inventory/getTopTenInventoryMetaData         controllers.Inventor
 GET           /inventory/getInventoryItem                   controllers.InventoryController.fetchSingleInventoryItem(vin: String)
 GET           /inventory/getInventoryItemPhotos             controllers.InventoryController.fetchSingleInventoryItemPhotos(vin: String)
 POST          /inventory/contactus                          controllers.InventoryController.contactUs
+POST          /contactus                                    controllers.InventoryController.generalContactUs
 
 GET           /notification/getNotification                 controllers.NotificationController.fetchNotificationsByDate(date: String)
 

@@ -48,6 +48,25 @@ class InventoryController @Inject()(cc: ControllerComponents,
 
     }
 
+  def generalContactUs: Action[AnyContent] =
+    Action.async {
+      implicit request =>
+        val contactRequest = requestToObject[ContactRequest](request)
+        println(s"Sending contact request for: ${contactRequest.email}")
+
+        val requestMap = Map(
+          "first_name" -> contactRequest.firstName,
+          "last_name" -> contactRequest.lastName,
+          "description" -> contactRequest.description,
+          "phone_number" -> contactRequest.phoneNumber,
+          "email" -> contactRequest.email,
+          "subject" -> s"Contact Request on from ${contactRequest.firstName} ${contactRequest.lastName}"
+        )
+        for {
+          _ <- emailService.sendEmail("sales@mayberryminitrucks.com", "d-df8007f9b3d345d8a2d34f97c507ebcc", requestMap)
+        } yield Created
+    }
+
   def fetchAllInventoryWithMetaData: Action[AnyContent] =
     Action.async {
       for {
