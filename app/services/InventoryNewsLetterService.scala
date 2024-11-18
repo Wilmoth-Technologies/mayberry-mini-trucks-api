@@ -60,26 +60,26 @@ class InventoryNewsLetterService @Inject()(actorSystem: ActorSystem,
   }
 
   // Calculate the initial delay until the next Wednesday at 9 AM EST
-  def calculateInitialDelay(): FiniteDuration = {
-    val now = ZonedDateTime.now(ZoneId.of("America/New_York"))
-    val nextRun = now.`with`(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY))
-      .withHour(9)
-      .withMinute(0)
-      .withSecond(0)
-      .withNano(0)
-
-    val initialDelay = Duration.between(now, nextRun)
-    FiniteDuration(initialDelay.toMillis, MILLISECONDS)
-  }
-
-  // Schedule the task to run weekly on Wednesdays at 9 AM EST
-  private val cancellable: Cancellable = actorSystem.scheduler.scheduleAtFixedRate(
-    calculateInitialDelay(), //Change me to 10.millis to run quicker at startup
-    7.days
-  )(new Runnable {
-    override def run(): Unit = task()
-  })
-
-  // Optionally add a stop hook for cleanup on application shutdown
-  def cancel(): Unit = cancellable.cancel()
+//  def calculateInitialDelay(): FiniteDuration = {
+//    val now = ZonedDateTime.now(ZoneId.of("America/New_York"))
+//    val nextRun = now.`with`(TemporalAdjusters.nextOrSame(DayOfWeek.WEDNESDAY))
+//      .withHour(9)
+//      .withMinute(0)
+//      .withSecond(0)
+//      .withNano(0)
+//
+//    val initialDelay = Duration.between(now, nextRun)
+//    FiniteDuration(initialDelay.toMillis, MILLISECONDS)
+//  }
+//
+//  // Schedule the task to run weekly on Wednesdays at 9 AM EST
+//  private val cancellable: Cancellable = actorSystem.scheduler.scheduleAtFixedRate(
+//    calculateInitialDelay(), //Change me to 10.millis to run quicker at startup
+//    7.days
+//  )(new Runnable {
+//    override def run(): Unit = task()
+//  })
+//
+//  // Optionally add a stop hook for cleanup on application shutdown
+//  def cancel(): Unit = cancellable.cancel()
 }
