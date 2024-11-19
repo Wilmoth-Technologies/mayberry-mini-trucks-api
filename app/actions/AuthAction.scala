@@ -57,22 +57,26 @@ class AuthAction @Inject()(parser: BodyParsers.Default)(implicit ec: ExecutionCo
     } match {
       case Some(token) =>
         try {
-          val jwksUrl = "https://dev-kss71gvvwi5vchr2.us.auth0.com/.well-known/jwks.json"
-          val jwks = fetchJWKS(jwksUrl)
-          val jwtKid = "0nyeBldgkORp8NQGPDboQ" //TODO: Extract this from the JWT header
-          val publicKey: Option[RSAPublicKey] = getRSAPublicKey(jwks, jwtKid)
-
-          if (publicKey.isDefined) {
-            validateTokenAndCheckPermissions(token, request, publicKey.get) match {
-              case Right(_) =>
-                // If the token is valid and the user has the required permissions, continue
-                block(request)
-              case Left(errorMessage) =>
-                // If validation fails, return 403 Forbidden or 401 Unauthorized
-                Future.successful(Forbidden(s"Access denied: $errorMessage"))
-            }
+          if (token.equals(sys.env("SCHEDULER_API_KEY"))) {
+            block(request)
           } else {
-            Future.successful(InternalServerError(s"Unable to Fetch Public Key for Authentication"))
+            val jwksUrl = "https://dev-kss71gvvwi5vchr2.us.auth0.com/.well-known/jwks.json"
+            val jwks = fetchJWKS(jwksUrl)
+            val jwtKid = "0nyeBldgkORp8NQGPDboQ" //TODO: Extract this from the JWT header
+            val publicKey: Option[RSAPublicKey] = getRSAPublicKey(jwks, jwtKid)
+
+            if (publicKey.isDefined) {
+              validateTokenAndCheckPermissions(token, request, publicKey.get) match {
+                case Right(_) =>
+                  // If the token is valid and the user has the required permissions, continue
+                  block(request)
+                case Left(errorMessage) =>
+                  // If validation fails, return 403 Forbidden or 401 Unauthorized
+                  Future.successful(Forbidden(s"Access denied: $errorMessage"))
+              }
+            } else {
+              Future.successful(InternalServerError(s"Unable to Fetch Public Key for Authentication"))
+            }
           }
         } catch {
           case _: Exception => Future.successful(Results.Unauthorized("Invalid token"))
