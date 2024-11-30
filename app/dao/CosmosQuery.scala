@@ -9,6 +9,7 @@ object CosmosQuery {
   val inventoryCollection: String = config.getString("cosmosdb.collection.inventory")
   val subscriberCollection: String = config.getString("cosmosdb.collection.subscriber")
   val notificationCollection: String = config.getString("cosmosdb.collection.notification")
+  val reviewsCollection: String = config.getString("cosmosdb.collection.reviews")
 
   def getResultsById(id: String)(collectionName: String): SqlQuerySpec =
     new SqlQuerySpec(
@@ -53,4 +54,7 @@ object CosmosQuery {
       List(new SqlParameter(parameterizedDate, date)): _*
     )
   }
+
+  def getLatestItemByTimestamp()(collectionName: String): SqlQuerySpec =
+    new SqlQuerySpec(s"""SELECT TOP 1 * FROM $collectionName c ORDER BY c._timestamp DESC""")
 }
