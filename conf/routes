@@ -3,7 +3,9 @@
 # ~~~~
 
 GET           /health                                       controllers.HealthController.health
+
 GET           /review/getBusinessDetails                    controllers.ReviewController.getBusinessDetails
+GET           /review/addNewReviewDetails                   controllers.ReviewController.updateGoogleReviews
 
 GET           /inventory/getInventoryMetaData               controllers.InventoryController.fetchAllInventoryWithMetaData
 GET           /inventory/getTopTenInventoryMetaData         controllers.InventoryController.fetchTopTenInventoryWithMetaData

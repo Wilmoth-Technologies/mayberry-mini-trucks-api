@@ -41,7 +41,8 @@ class CosmosDb @Inject()(builder: CosmosDbBuilder)(implicit ec: ExecutionContext
     List(
       config.getString(s"cosmosdb.collection.inventory"),
       config.getString(s"cosmosdb.collection.subscriber"),
-      config.getString(s"cosmosdb.collection.notification")
+      config.getString(s"cosmosdb.collection.notification"),
+      config.getString(s"cosmosdb.collection.reviews")
     ).map(collection => collection -> createCosmosContainer(collection)
     ).toMap
 

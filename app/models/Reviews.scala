@@ -9,7 +9,8 @@ case class Result(
 case class BusinessDetails(
                             @JsonProperty("rating") rating: Double,
                             @JsonProperty("user_ratings_total") reviewCount: Int,
-                            @JsonProperty("reviews") reviews: List[Review]
+                            @JsonProperty("reviews") reviews: List[Review],
+                            id: String
                           )
 
 case class Review(
