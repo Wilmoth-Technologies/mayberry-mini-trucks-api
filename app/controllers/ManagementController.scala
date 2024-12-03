@@ -105,7 +105,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
         inventoryItem <- cosmosDb.runQuery[Inventory](getResultsById(vin), inventoryCollection)
       } yield listToJson(inventoryItem)
     }
-//TODO: Add in updatedBy field based on User Auth
+
   def submitNewInventory: Action[MultipartFormData[Files.TemporaryFile]] = authAction(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
     implicit request => {
       println(s"POST: Submit New Inventory: $request")
@@ -123,7 +123,7 @@ class ManagementController @Inject()(cc: ControllerComponents,
       } yield Created(inventoryDetails.vin)
     }
   }
-  //TODO: Add in updatedBy field based on User Auth
+
   def submitInventoryEdit(areImagesUpdated: Boolean = false): Action[MultipartFormData[Files.TemporaryFile]] = authAction(parse.multipartFormData(maxLength = 500 * 1024 * 1024)).async {
     implicit request => {
       println(s"PUT: Submit Inventory: $request")
@@ -132,7 +132,12 @@ class ManagementController @Inject()(cc: ControllerComponents,
       if (areImagesUpdated) {
         for {
           imageLinkList <- clearAndParseImages(request.body, inventoryDetails)
-          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageLinkList,
+          imageListWithCacheBreak = if (imageLinkList.nonEmpty) {
+            imageLinkList.updated(0, imageLinkList.head + s"?v=$currentDateTimeInTimeStamp")
+          } else {
+            imageLinkList
+          }
+          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageListWithCacheBreak,
             updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.year)
         } yield NoContent
       } else {
