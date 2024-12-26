@@ -13,5 +13,6 @@ object Status extends Enumeration {
 
   val inStock: Status.Value = Value("In Stock")
   val pendingSale: Status.Value = Value("Pending Sale")
+  val outOfService: Status.Value = Value("Out of Service")
   val sold: Status.Value = Value("Sold")
 }

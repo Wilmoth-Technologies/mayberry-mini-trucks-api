@@ -24,6 +24,7 @@ object CosmosQuery {
     new SqlQuerySpec(
       s"""SELECT * FROM $collectionName c
          |WHERE c.status != "Sold"
+         |AND c.status != "Out of Service"
          |AND ARRAY_LENGTH(c.imageLinks) >= 1
          |ORDER BY c.status ASC""".stripMargin)
 
@@ -32,6 +33,7 @@ object CosmosQuery {
       s"""SELECT * FROM $collectionName c
          |WHERE c.status != "Sold"
          |AND c.status != "Pending Sale"
+         |AND c.status != "Out of Service"
          |AND ARRAY_LENGTH(c.imageLinks) >= 1
          |OFFSET 0 LIMIT 10""".stripMargin)
 
@@ -40,6 +42,7 @@ object CosmosQuery {
       s"""SELECT * FROM $collectionName c
          |WHERE c.status != "Sold"
          |AND c.status != "Pending Sale"
+         |AND c.status != "Out of Service"
          |AND ARRAY_LENGTH(c.imageLinks) >= 1
          |AND c.creationTimeStamp >= @sevenDaysAgo""".stripMargin,
       List(new SqlParameter("@sevenDaysAgo", sevenDaysAgo)): _*
