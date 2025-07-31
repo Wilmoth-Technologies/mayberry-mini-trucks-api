@@ -21,6 +21,8 @@ DELETE        /remove/subscriber                            controllers.Subscrip
 
 GET           /csrfToken                                    controllers.CSRFController.csrfToken()
 
+POST          /email/contactus                              controllers.WilmothTechnologyEmailController.contactUs
+
 GET           /management/getNotificationList               controllers.ManagementController.fetchNotificationList
 GET           /management/getSubscriberList                 controllers.ManagementController.fetchSubscriberList
 GET           /management/getInventoryPhotos                controllers.ManagementController.fetchAllPhotos(vin: String)
