@@ -46,6 +46,32 @@ class EmailService @Inject()()(implicit ec: ExecutionContext) {
     }
   }
 
+  def sendEmailWTS(to: String, from: String, templateId: String, dynamicData: Map[String, String]): Future[Unit] = Future {
+    val fromEmail = new Email(from)
+    val toEmail = new Email(to)
+    val mail = new Mail()
+    mail.setFrom(fromEmail)
+    mail.setTemplateId(templateId)
+
+    val personalization = new Personalization()
+    personalization.addTo(toEmail)
+
+    dynamicData.foreach { case (key, value) =>
+      personalization.addDynamicTemplateData(key, value)
+    }
+    mail.addPersonalization(personalization)
+
+    val request = new Request()
+    request.setMethod(Method.POST)
+    request.setEndpoint("mail/send")
+    request.setBody(mail.build())
+
+    val response = sendGridClient.api(request)
+    if (response.getStatusCode >= 400) {
+      throw new Exception(s"Failed to send email: ${response.getBody}")
+    }
+  }
+
   def removeEmailFromGlobalUnsubscribe(email: String): Future[Unit] = Future {
     val request = new Request()
     request.setMethod(Method.DELETE)
