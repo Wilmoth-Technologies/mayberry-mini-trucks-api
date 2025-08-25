@@ -71,8 +71,8 @@ class InventoryController @Inject()(cc: ControllerComponents,
     Action.async {
       for {
         inventoryList <- cosmosDb.runQuery[Inventory](getNotSoldInventory(), inventoryCollection)
-        mappedList = inventoryList.map(item => InventoryPaginationData(item.vin, item.modelCode, item.stockNumber, item.make,
-          item.model, item.year, item.exteriorColor, item.interiorColor, item.mileage, item.transmission, item.engine,
+        mappedList = inventoryList.map(item => InventoryPaginationData(item.vin, item.modelCode, item.stockNumber, item.make.trim,
+          item.model.trim, item.year, item.exteriorColor, item.interiorColor, item.mileage, item.transmission.trim, item.engine.trim,
           item.description, item.price, item.titleInHand, item.status, item.options, item.imageLinks.headOption.get))
       } yield listToJson(mappedList)
     }
