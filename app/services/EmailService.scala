@@ -2,7 +2,7 @@ package services
 
 import com.sendgrid.{Method, Request, SendGrid}
 import com.sendgrid.helpers.mail.Mail
-import com.sendgrid.helpers.mail.objects.{Email, Personalization}
+import com.sendgrid.helpers.mail.objects.{Email, Personalization, ASM}
 import com.typesafe.config.{Config, ConfigFactory}
 
 import javax.inject.{Inject, Singleton}
@@ -26,6 +26,38 @@ class EmailService @Inject()()(implicit ec: ExecutionContext) {
     val mail = new Mail()
     mail.setFrom(from)
     mail.setTemplateId(templateId)
+
+    val personalization = new Personalization()
+    personalization.addTo(toEmail)
+
+    dynamicData.foreach { case (key, value) =>
+      personalization.addDynamicTemplateData(key, value)
+    }
+    mail.addPersonalization(personalization)
+
+    val request = new Request()
+    request.setMethod(Method.POST)
+    request.setEndpoint("mail/send")
+    request.setBody(mail.build())
+
+    val response = sendGridClient.api(request)
+    if (response.getStatusCode >= 400) {
+      throw new Exception(s"Failed to send email: ${response.getBody}")
+    }
+  }
+
+  def sendContactRequestEmail(to: String, from: String, templateId: String, dynamicData: Map[String, String]): Future[Unit] = Future {
+    val fromEmail = new Email(from)
+    val toEmail = new Email(to)
+    val mail = new Mail()
+    mail.setFrom(fromEmail)
+    mail.setTemplateId(templateId)
+    
+    // Disable unsubscribe management by setting ASM with group_id 0
+    val asm = new ASM()
+    asm.setGroupId(0)
+    asm.setGroupsToDisplay(Array.empty[Int])
+    mail.setASM(asm)
 
     val personalization = new Personalization()
     personalization.addTo(toEmail)
