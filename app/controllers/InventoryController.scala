@@ -43,7 +43,7 @@ class InventoryController @Inject()(cc: ControllerComponents,
           "subject" -> subject
         )
         for {
-          _ <- emailService.sendEmail("sales@mayberryminitrucks.com", "d-d955035d6b614bb4b4b68ab6a956dc50", requestMap)
+          _ <- emailService.sendContactRequestEmail("sales@mayberryminitrucks.com", contactRequest.email, "d-d955035d6b614bb4b4b68ab6a956dc50", requestMap)
         } yield Created
 
     }
@@ -63,7 +63,7 @@ class InventoryController @Inject()(cc: ControllerComponents,
           "subject" -> s"Contact Request from ${contactRequest.firstName} ${contactRequest.lastName}"
         )
         for {
-          _ <- emailService.sendEmail("sales@mayberryminitrucks.com", "d-df8007f9b3d345d8a2d34f97c507ebcc", requestMap)
+          _ <- emailService.sendContactRequestEmail("sales@mayberryminitrucks.com", contactRequest.email, "d-df8007f9b3d345d8a2d34f97c507ebcc", requestMap)
         } yield Created
     }
 
