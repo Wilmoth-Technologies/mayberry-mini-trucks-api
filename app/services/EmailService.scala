@@ -2,7 +2,7 @@ package services
 
 import com.sendgrid.{Method, Request, SendGrid}
 import com.sendgrid.helpers.mail.Mail
-import com.sendgrid.helpers.mail.objects.{Email, Personalization, ASM}
+import com.sendgrid.helpers.mail.objects.{Email, Personalization}
 import com.typesafe.config.{Config, ConfigFactory}
 
 import javax.inject.{Inject, Singleton}
@@ -52,12 +52,6 @@ class EmailService @Inject()()(implicit ec: ExecutionContext) {
     val mail = new Mail()
     mail.setFrom(fromEmail)
     mail.setTemplateId(templateId)
-    
-    // Disable unsubscribe management by setting ASM with group_id 0
-    val asm = new ASM()
-    asm.setGroupId(0)
-    asm.setGroupsToDisplay(Array.empty[Int])
-    mail.setASM(asm)
 
     val personalization = new Personalization()
     personalization.addTo(toEmail)
