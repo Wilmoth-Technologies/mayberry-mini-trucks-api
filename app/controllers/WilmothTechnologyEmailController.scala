@@ -31,7 +31,7 @@ class WilmothTechnologyEmailController @Inject()(cc: ControllerComponents,
           "subject" -> subject
         )
         for {
-          _ <- emailService.sendEmailWTS("info@wilmothtechnologyservices.com", contactRequest.email, "d-b124c3df45234d0c9545d2e9f7e62fbd", requestMap)
+          _ <- emailService.sendEmailWTS("info@wilmothtechnologyservices.com", "info@wilmothtechnologyservices.com", "d-b124c3df45234d0c9545d2e9f7e62fbd", requestMap)
         } yield Created
 
     }
