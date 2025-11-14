@@ -22,6 +22,8 @@ DELETE        /remove/subscriber                            controllers.Subscrip
 GET           /csrfToken                                    controllers.CSRFController.csrfToken()
 
 POST          /email/contactus                              controllers.WilmothTechnologyEmailController.contactUs
+POST          /email/contactus/davis                        controllers.WilmothTechnologyEmailController.contactUsDavisHVAC
+POST          /email/schedule/service/davis                 controllers.WilmothTechnologyEmailController.scheduleApptDavisHVAC
 
 GET           /management/getNotificationList               controllers.ManagementController.fetchNotificationList
 GET           /management/getSubscriberList                 controllers.ManagementController.fetchSubscriberList
