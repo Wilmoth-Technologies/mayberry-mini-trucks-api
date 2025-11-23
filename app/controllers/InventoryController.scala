@@ -6,7 +6,7 @@ import models.{ContactRequest, Inventory, InventoryLandingScroller, InventoryPag
 import play.api.Logger
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import services.{CloudStorageService, EmailService}
-import shared.AppFunctions.{listToJson, requestToObject}
+import shared.AppFunctions.{formatPhoneNumber, listToJson, requestToObject}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +36,7 @@ class InventoryController @Inject()(cc: ControllerComponents,
           "first_name" -> contactRequest.firstName,
           "last_name" -> contactRequest.lastName,
           "description" -> contactRequest.description,
-          "phone_number" -> contactRequest.phoneNumber,
+          "phone_number" -> formatPhoneNumber(contactRequest.phoneNumber),
           "email" -> contactRequest.email,
           "listing_link" -> s"http://mayberryminitrucks.com/inventory/${contactRequest.vin}",
           "vin" -> contactRequest.vin,
@@ -58,7 +58,7 @@ class InventoryController @Inject()(cc: ControllerComponents,
           "first_name" -> contactRequest.firstName,
           "last_name" -> contactRequest.lastName,
           "description" -> contactRequest.description,
-          "phone_number" -> contactRequest.phoneNumber,
+          "phone_number" -> formatPhoneNumber(contactRequest.phoneNumber),
           "email" -> contactRequest.email,
           "subject" -> s"Contact Request from ${contactRequest.firstName} ${contactRequest.lastName}"
         )

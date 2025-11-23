@@ -66,4 +66,20 @@ object AppFunctions {
       case _: NumberFormatException => "Invalid number"
     }
   }
+
+  def formatPhoneNumber(phoneNumber: String): String = {
+    // Extract only digits from the phone number
+    val digitsOnly = phoneNumber.replaceAll("[^0-9]", "")
+    
+    // Format as (xxx) xxx-xxxx for 10-digit numbers
+    if (digitsOnly.length == 10) {
+      s"(${digitsOnly.substring(0, 3)}) ${digitsOnly.substring(3, 6)}-${digitsOnly.substring(6)}"
+    } else if (digitsOnly.length == 11 && digitsOnly.startsWith("1")) {
+      // Handle 11-digit numbers starting with 1 (US country code)
+      s"(${digitsOnly.substring(1, 4)}) ${digitsOnly.substring(4, 7)}-${digitsOnly.substring(7)}"
+    } else {
+      // Return original if it doesn't match expected format
+      phoneNumber
+    }
+  }
 }
