@@ -137,13 +137,13 @@ class ManagementController @Inject()(cc: ControllerComponents,
           } else {
             imageLinkList
           }
-          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin, imageLinks = imageListWithCacheBreak,
-            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.year)
+          _ <- upsertInventoryRespectingPartitionKeyChange(inventoryDetails.copy(id = inventoryDetails.vin,
+            imageLinks = imageListWithCacheBreak, updatedTimeStamp = currentDateTimeInTimeStamp))
         } yield NoContent
       } else {
         for {
-          _ <- cosmosDb.upsertDatabaseEntry(inventoryDetails.copy(id = inventoryDetails.vin,
-            updatedTimeStamp = currentDateTimeInTimeStamp), inventoryCollection, inventoryDetails.vin, inventoryDetails.year)
+          _ <- upsertInventoryRespectingPartitionKeyChange(inventoryDetails.copy(id = inventoryDetails.vin,
+            updatedTimeStamp = currentDateTimeInTimeStamp))
         } yield NoContent
       }
     }
@@ -159,6 +159,22 @@ class ManagementController @Inject()(cc: ControllerComponents,
 
 
   /* START HELPER FUNCTIONS */
+
+  /** Year is the Cosmos partition key; it cannot be updated in place. Load current row by VIN, delete the old
+    * partition if `year` changed, then upsert into the new partition. */
+  private def upsertInventoryRespectingPartitionKeyChange(inventory: Inventory): Future[Boolean] = {
+    for {
+      existing <- cosmosDb.runQuery[Inventory](getResultsById(inventory.vin), inventoryCollection)
+      _ <- existing.headOption match {
+        case Some(prev) if prev.year != inventory.year =>
+          cosmosDb.deleteByIdAndKeyHelper(inventoryCollection, inventory.vin, prev.year).map(_ => ())
+        case _ =>
+          Future.successful(())
+      }
+      ok <- cosmosDb.upsertDatabaseEntry(inventory, inventoryCollection, inventory.vin, inventory.year)
+    } yield ok
+  }
+
   private def parseImages(body: MultipartFormData[Files.TemporaryFile], inventory: Inventory): Future[List[String]] = {
     Future(body.files.zipWithIndex.map {
       case (file, index) =>
