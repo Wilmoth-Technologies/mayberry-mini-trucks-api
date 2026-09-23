@@ -38,4 +38,5 @@ object InventoryOptions extends Enumeration {
   val vanWithDeck: InventoryOptions.Value = Value("Van w Deck")
   val attack: InventoryOptions.Value = Value("Attack")
   val jumbo: InventoryOptions.Value = Value("Jumbo")
+  val automatic: InventoryOptions.Value = Value("Automatic")
 }
