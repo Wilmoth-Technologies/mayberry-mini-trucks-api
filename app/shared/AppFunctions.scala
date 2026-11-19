@@ -82,4 +82,16 @@ object AppFunctions {
       phoneNumber
     }
   }
+
+  def normalizePhoneDigits(phoneNumber: String): String = {
+    val digitsOnly = Option(phoneNumber).getOrElse("").replaceAll("[^0-9]", "")
+    if (digitsOnly.length == 11 && digitsOnly.startsWith("1")) digitsOnly.substring(1) else digitsOnly
+  }
+
+  def isBlockedContact(email: String, phoneNumber: String): Boolean = {
+    val normalizedEmail = Option(email).getOrElse("").trim.toLowerCase
+    val normalizedPhone = normalizePhoneDigits(phoneNumber)
+    AppConstants.BlockedContactEmails.contains(normalizedEmail) ||
+      AppConstants.BlockedContactPhones.contains(normalizedPhone)
+  }
 }
